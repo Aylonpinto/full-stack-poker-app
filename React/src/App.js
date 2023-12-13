@@ -1,9 +1,6 @@
-import logo from './logo.svg';
 import React, {useState , useEffect} from 'react'
 import './App.css';
 import api from './Api'
-import PokerForm from './components/PokerForm';
-import { Container } from '@mui/material';
 import { Button } from '@mui/joy';
 import TotalBalance from './components/TotalBalance';
 import GameForm from './components/GameForm';
@@ -76,16 +73,8 @@ function App() {
   };
 
   const handleFormSubmit = async (event) => {
-    event.preventDefault();
-  
-    // Fetch games and wait for the response before proceeding
-    const gamesResponse = await api.post('/games/', {game_name: gameName});
-    const gameId = gamesResponse.data.id;
-  
-    // Fetch games again after creating a new game
-    const updatedGamesResponse = await api.get('/games/');
-    const updatedGames = updatedGamesResponse.data;
-  
+    event.preventDefault();  
+    const gameId = (games.length ? _.maxBy(games, g => g.id).id : 0) + 1  
     for (const player of playersData) {
       if (!balanceData[player.name]) {
         await api.post('/players/', {player_name: player.name, balance: 0});
@@ -93,24 +82,23 @@ function App() {
   
       // Fetch players and wait for the response before proceeding
       const playersResponse = await api.get('/players/');
-      console.log(playersResponse.data)
       const playerId = _.find(playersResponse.data, p => {
         return p.player_name === player.name
       })?.id;
-      console.log(playerId)
   
       const playerGameData = {
         game_id: gameId,
         player_id: playerId ?? 0,
         start_balance: player.start_balance,
         end_balance: player.end_balance
-      };
-  
+      };  
       await api.post('/player_games/', playerGameData);
+      
     }
+    await api.post('/games/', {game_name: gameName});
   
     // Use the updatedGames array
-    setGames(updatedGames);
+    fetchGames();
     fetchBalanceData();
     setGameName('');
     setPlayersData([{name: '', start_balance: '', end_balance: ''}]);

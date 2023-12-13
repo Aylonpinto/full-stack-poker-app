@@ -6,6 +6,7 @@ import sqlalchemy as sql
 from pydantic import BaseModel
 from database import SessionLocal, engine
 import models
+import calculations as calc
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -79,6 +80,25 @@ async def create_game(game: PokerGameBase, db: db_dependency):
     db.add(db_poker_game)
     db.commit()
     db.refresh(db_poker_game)
+    current_balance = db.query(models.PlayerBalance).all()
+    players = db.query(models.PlayerGames).filter(
+        models.PlayerGames.game_id == db_poker_game.id
+    )
+    balance = {}
+    for player in current_balance:
+        balance[player.id] = player.balance
+    start_balance = {}
+    end_balance = {}
+    for player in players:
+        start_balance[player.player_id] = player.start_balance
+        end_balance[player.player_id] = player.end_balance
+    balance = add_balances(calc.Game(start_balance, end_balance).balance, balance)
+    for player_id, value in balance.items():
+        db.query(models.PlayerBalance).filter(
+            models.PlayerBalance.id == player_id
+        ).update({"balance": value})
+    db.commit()
+
     return db_poker_game
 
 
@@ -113,7 +133,13 @@ async def insert_player(player: PlayerBalanceBase, db: db_dependency):
 
 @app.get("/players/", response_model=List[PlayerBalanceModel])
 async def read_players(db: db_dependency, skip: int = 0, limit: int = 100):
-    players = db.query(models.PlayerBalance).offset(skip).limit(limit).all()
+    players = (
+        db.query(models.PlayerBalance)
+        .order_by(sql.desc(models.PlayerBalance.balance))
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
     return players
 
 
@@ -130,6 +156,15 @@ async def insert_player_game(player: PlayerGamesBase, db: db_dependency):
 async def read_player_games(db: db_dependency, skip: int = 0, limit: int = 100):
     players = db.query(models.PlayerGames).offset(skip).limit(limit).all()
     return players
+
+
+def add_balances(balance1, balance2):
+    for player_id, value in balance2.items():
+        try:
+            balance1[player_id] = balance1[player_id] + value
+        except KeyError:
+            balance1[player_id] = value
+    return balance1
 
 
 # @app.delete("/games/")

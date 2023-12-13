@@ -16,6 +16,11 @@ class PlayerBalance(Base):
     player_name = Column(String, index=True)
     balance = Column(Float)
 
+    def __repr__(self) -> str:
+        return str(
+            {"id": self.id, "player_name": self.player_name, "balance": self.balance}
+        )
+
 
 class PlayerGames(Base):
     __tablename__ = "player_games"

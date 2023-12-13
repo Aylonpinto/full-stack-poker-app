@@ -11,7 +11,7 @@ export default function Balance(props) {
     const body = _.map(props.data, (balance, name) => {
         return (<tr>
                     <td>{name}</td>
-                    <td>{`€${balance}`}</td>
+                    <td>{balance < 0 ? `-€${-balance}` : `€${balance}`}</td>
                 </tr>)
         
     })
