@@ -5,6 +5,7 @@ import { Button } from '@mui/joy';
 import TotalBalance from './components/TotalBalance';
 import GameForm from './components/GameForm';
 import _ from 'lodash';
+import SettleBalanceModal from './components/SettleBalanceModal';
 
 
 
@@ -13,6 +14,7 @@ function App() {
   const [gameName, setGameName] = useState('');
   const [playersData, setPlayersData] = useState([{name: '', start_balance: '', end_balance: ''}])
   const [balanceData, setBalanceData] = useState({})
+  const [settleBalanceData, setSettleBalanceData] = useState([])
 
 
   const fetchGames = async () => {
@@ -76,7 +78,8 @@ function App() {
     event.preventDefault();  
     const gameId = (games.length ? _.maxBy(games, g => g.id).id : 0) + 1  
     for (const player of playersData) {
-      if (!balanceData[player.name]) {
+      console.log(balanceData[player.name], player.name, balanceData)
+      if (typeof balanceData[player.name] === 'undefined') {
         await api.post('/players/', {player_name: player.name, balance: 0});
       }
   
@@ -103,6 +106,12 @@ function App() {
     setGameName('');
     setPlayersData([{name: '', start_balance: '', end_balance: ''}]);
   };
+
+  const handleSettleBalance = async (event) => {
+    event.preventDefault()
+    const transactions = await api.get('/settle_balance/')
+    setSettleBalanceData(transactions.data)
+  }
   
   
   
@@ -112,12 +121,10 @@ function App() {
       <header className="App-header">
       <h1>Poker Balance Tracker</h1>
       </header>
-      <TotalBalance balanceData={balanceData}/>
+      <TotalBalance balanceData={balanceData} handleSettleBalance={handleSettleBalance}/>
       <h2>Create Poker Game</h2>
       <GameForm gameName={gameName} setGameName={setGameName} playersData={playersData} setPlayersData={setPlayersData} handleSubmit={handleFormSubmit}/>
-      <Button onClick={handleDeleteGames}>
-        Delete games
-      </Button>
+      <SettleBalanceModal settleBalanceData={settleBalanceData}/>
     </div>  
   );
 }

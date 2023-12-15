@@ -8,13 +8,13 @@ import PlayerBalance from './PlayerBalance';
 import { IconButton, Sheet } from '@mui/joy';
 import { Container } from '@mui/material';
 
-const TotalBalance = ({ balanceData }) => {
+const TotalBalance = ({ balanceData, handleSettleBalance }) => {
 
   return (
     <Container>
           <h2>Total Balance:</h2>
           <Balance data={balanceData}/>
-          <Button variant='soft' sx={{
+          <Button onClick = {handleSettleBalance} variant='soft' sx={{
                     display: 'inline-block',
                     width: '100%'}}>Settle Balance</Button>
     </Container>

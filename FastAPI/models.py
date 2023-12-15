@@ -9,6 +9,9 @@ class PokerGame(Base):
     game_name = Column(String, index=True)
     # Add more fields as needed
 
+    def __repr__(self):
+        return str(self.__dict__)
+
 
 class PlayerBalance(Base):
     __tablename__ = "player_balances"
@@ -29,3 +32,6 @@ class PlayerGames(Base):
     player_id = Column(Integer, ForeignKey("player_balances.id"))
     start_balance = Column(Float)
     end_balance = Column(Float)
+
+    def __repr__(self):
+        return str(self.__dict__)

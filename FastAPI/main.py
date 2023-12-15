@@ -11,9 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:3000",
-]
+origins = ["http://localhost:3000", "http://192.168.1.120:3000"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -81,9 +79,13 @@ async def create_game(game: PokerGameBase, db: db_dependency):
     db.commit()
     db.refresh(db_poker_game)
     current_balance = db.query(models.PlayerBalance).all()
-    players = db.query(models.PlayerGames).filter(
-        models.PlayerGames.game_id == db_poker_game.id
+    print(current_balance, "cur")
+    players = (
+        db.query(models.PlayerGames)
+        .filter(models.PlayerGames.game_id == db_poker_game.id)
+        .all()
     )
+    print(players, "play")
     balance = {}
     for player in current_balance:
         balance[player.id] = player.balance
@@ -158,6 +160,16 @@ async def read_player_games(db: db_dependency, skip: int = 0, limit: int = 100):
     return players
 
 
+@app.get("/settle_balance/")
+async def get_transactions(db: db_dependency):
+    players = db.query(models.PlayerBalance).all()
+    balance = {}
+    for player in players:
+        balance[player.player_name] = player.balance
+    transactions = settle_balance(balance)
+    return transactions
+
+
 def add_balances(balance1, balance2):
     for player_id, value in balance2.items():
         try:
@@ -165,6 +177,39 @@ def add_balances(balance1, balance2):
         except KeyError:
             balance1[player_id] = value
     return balance1
+
+
+def settle_balance(balance: dict):
+    sorted_balance = sorted(balance.items(), key=lambda player: player[1])
+    print(sorted_balance)
+    transactions = []
+    player = sorted_balance[0]
+    while player[1] < 0:
+        other_player = sorted_balance[-1]
+        if -player[1] == other_player[1]:
+            transactions.append(
+                f"{player[0]} pays €{round(-player[1], 2)} to {other_player[0]}"
+            )
+            sorted_balance = sorted_balance[1:-1]
+        elif -player[1] < other_player[1]:
+            transactions.append(
+                f"{player[0]} pays €{round(-player[1], 2)} to {other_player[0]}"
+            )
+            sorted_balance = sorted_balance[1:]
+            sorted_balance[-1] = (other_player[0], other_player[1] + player[1])
+        else:
+            transactions.append(
+                f"{player[0]} pays €{round(other_player[1], 2)} to {other_player[0]}"
+            )
+            sorted_balance = sorted_balance[:-1]
+            sorted_balance[0] = (player[0], player[1] + other_player[1])
+        if len(sorted_balance) <= 1:
+            break
+        player = sorted_balance[0]
+        print(sorted_balance)
+    for transation in transactions:
+        print(transation)
+    return transactions
 
 
 # @app.delete("/games/")
