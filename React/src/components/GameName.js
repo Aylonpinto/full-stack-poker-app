@@ -13,6 +13,7 @@ export default function GameName({gameName, setGameName}) {
             variant="soft"
             value={gameName}
             onChange={(e) => setGameName(e.target.value)}
+            required
             />
         </>)
             

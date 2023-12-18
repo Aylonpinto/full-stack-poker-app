@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Input from '@mui/joy/Input';
-
 
 export default function PlayerLine({playerData, setPlayerData, index}) {
     const handleNameChange = async (event, i) => {
@@ -30,25 +29,29 @@ export default function PlayerLine({playerData, setPlayerData, index}) {
 
 
     return( <>
-        <Input  
-            placeholder="Name"
-            variant="soft"
-            value={playerData.name}
-            onChange={(e) => handleNameChange(e, index)}
+            <Input  
+                placeholder="Name"
+                variant="soft"
+                value={playerData.name}
+                onChange={(e) => handleNameChange(e, index)}
+                required
             />
             <Input
-            placeholder="Start Balance"
-            variant="soft"
-            type="number"
-            value={playerData.start_balance}
-            onChange={(e) => handleStartChange(e, index)}
+                placeholder="Start Balance"
+                variant="soft"
+                type="number"
+                value={playerData.start_balance}
+                onChange={(e) => handleStartChange(e, index)}
+                startDecorator={'€'}
+                required
             />
             <Input
-            placeholder="End Balance"
-            variant="soft"
-            type="number"
-            value={playerData.end_balance}
-            onChange={(e) => handleEndChange(e, index)}
+                placeholder="End Balance"
+                variant="soft"
+                type="number"
+                value={playerData.end_balance}
+                startDecorator={'€'}
+                onChange={(e) => handleEndChange(e, index)}
             />
 
         </>)

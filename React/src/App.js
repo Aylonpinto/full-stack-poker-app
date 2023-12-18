@@ -1,7 +1,6 @@
 import React, {useState , useEffect} from 'react'
 import './App.css';
 import api from './Api'
-import { Button } from '@mui/joy';
 import TotalBalance from './components/TotalBalance';
 import GameForm from './components/GameForm';
 import _ from 'lodash';
@@ -36,33 +35,6 @@ function App() {
     fetchBalanceData()
   }, [])
 
-
-
-  // const handleFormSubmit = async (event) => {
-  //   event.preventDefault();
-  //   await api.post('/games/', {game_name: gameName})
-    
-  //   const gameId = _.find(games, g => g.game_name === gameName)
-  //   for (const player of playersData) {
-  //     if (!balanceData[player.name]) {
-  //       await api.post('/players/', {player_name: player.name, balance: 0})
-  //     }
-  //     const players = await api.get('/players/')
-  //     const playerId = _.find(players, p => p.name === player.name).id
-  //     const playerGameData = {
-  //       game_id: gameId,
-  //       player_id: playerId,
-  //       start_balance: player.start_balance,
-  //       end_balance: player.end_balance
-  //     }
-  //     await api.post('/player_games/', playerGameData)
-  //   }
-  //   fetchGames()
-  //   fetchBalanceData()
-  //   setGameName('')
-  //   setPlayersData([{name: '', start_balance: '', end_balance: ''}])
-  // }
-
   const handleDeleteGames = async (event) => {
     event.preventDefault();
     const ids = games.map(g => g.id);
@@ -93,7 +65,7 @@ function App() {
         game_id: gameId,
         player_id: playerId ?? 0,
         start_balance: player.start_balance,
-        end_balance: player.end_balance
+        end_balance: typeof player.end_balance === 'number' ? player.end_balance : 0
       };  
       await api.post('/player_games/', playerGameData);
       
