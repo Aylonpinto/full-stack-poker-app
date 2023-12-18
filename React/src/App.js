@@ -111,8 +111,18 @@ function App() {
     event.preventDefault()
     const transactions = await api.get('/settle_balance/')
     setSettleBalanceData(transactions.data)
+    deletePlayers()
   }
   
+  const deletePlayers = async () => {
+    const response = await api.get('/players/')
+    const ids = response.data.map(p => p.id);
+  
+    for (const id of ids) {
+      await api.delete(`/players/${id}`);
+    }
+    fetchBalanceData()
+  }
   
   
 

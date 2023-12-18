@@ -11,7 +11,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-origins = ["http://localhost:3000", "http://192.168.1.120:3000"]
+origins = [
+    "http://localhost:3000",
+    "http://192.168.1.120:3000",
+    "http://192.168.1.239:3000",
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -145,6 +149,20 @@ async def read_players(db: db_dependency, skip: int = 0, limit: int = 100):
     return players
 
 
+@app.delete("/players/{player_id}")
+def delete_player(
+    player_id: int,
+    db: db_dependency,
+):
+    with db:
+        player = db.get(models.PlayerBalance, player_id)
+        if not player:
+            raise HTTPException(status_code=404, detail="Player not found")
+        db.delete(player)
+        db.commit()
+        return {"ok": True}
+
+
 @app.post("/player_games/", response_model=PlayerGamesModel)
 async def insert_player_game(player: PlayerGamesBase, db: db_dependency):
     db_player = models.PlayerGames(**player.dict())
@@ -184,6 +202,7 @@ def settle_balance(balance: dict):
     print(sorted_balance)
     transactions = []
     player = sorted_balance[0]
+    total = sum(balance.values())
     while player[1] < 0:
         other_player = sorted_balance[-1]
         if -player[1] == other_player[1]:
@@ -207,6 +226,7 @@ def settle_balance(balance: dict):
             break
         player = sorted_balance[0]
         print(sorted_balance)
+    transactions.append(f"Amount not accounted for: €{round(total, 2)}")
     for transation in transactions:
         print(transation)
     return transactions
