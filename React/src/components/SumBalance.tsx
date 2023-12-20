@@ -29,8 +29,8 @@ export default function SumBalance({ playersData }: Props) {
   ) : (
     <Typography
       variant="soft"
-      color="danger"
-      startDecorator="🚨"
+      color="warning"
+      startDecorator="⚠️"
       fontSize="sm"
       sx={{ "--Typography-gap": "0.5rem", p: 1 }}
     >

@@ -42,19 +42,22 @@ def settle_balance(balance: dict):
     while player[1] < 0:
         other_player = sorted_balance[-1]
         if -player[1] == other_player[1]:
+            amount = '€' + str(round(-player[1], 2)) if round(-player[1], 2) >= 0 else '-€' + str(-round(-player[1], 2))
             transactions.append(
-                f"{player[0]} pays €{round(-player[1], 2)} to {other_player[0]}"
+                f"{player[0]} pays {amount} to {other_player[0]}"
             )
             sorted_balance = sorted_balance[1:-1]
         elif -player[1] < other_player[1]:
+            amount = '€' + str(round(-player[1], 2)) if round(-player[1], 2) >= 0 else '-€' + str(-round(-player[1], 2))
             transactions.append(
-                f"{player[0]} pays €{round(-player[1], 2)} to {other_player[0]}"
+                f"{player[0]} pays {amount} to {other_player[0]}"
             )
             sorted_balance = sorted_balance[1:]
             sorted_balance[-1] = (other_player[0], other_player[1] + player[1])
         else:
+            amount = '€' + str(round(other_player[1], 2)) if round(other_player[1], 2) >= 0 else '-€' + str(-round(other_player[1], 2))
             transactions.append(
-                f"{player[0]} pays €{round(other_player[1], 2)} to {other_player[0]}"
+                f"{player[0]} pays {amount} to {other_player[0]}"
             )
             sorted_balance = sorted_balance[:-1]
             sorted_balance[0] = (player[0], player[1] + other_player[1])
@@ -62,7 +65,8 @@ def settle_balance(balance: dict):
             break
         player = sorted_balance[0]
         print(sorted_balance)
-    transactions.append(f"Amount not accounted for: €{round(total, 2)}")
+    amount = amount = '€' + str(round(total, 2)) if round(total, 2) >= 0 else '-€' + str(-round(total, 2))
+    transactions.append(f"Amount not accounted for: {amount}")
     for transation in transactions:
         print(transation)
     return transactions

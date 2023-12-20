@@ -1,4 +1,4 @@
-import { IonIcon } from "@ionic/react";
+import AddIcon from "@mui/icons-material/Add";
 import { IconButton, Sheet } from "@mui/joy";
 import FormHelperText from "@mui/joy/FormHelperText";
 import List from "@mui/joy/List";
@@ -35,7 +35,7 @@ export default function PlayerBalance({ playersData, setPlayersData }: Props) {
                 color="primary"
                 onClick={() => addPlayer()}
               >
-                <IonIcon icon="add-outline" />
+                <AddIcon />
               </IconButton>
             </ListItem>
           ) : (

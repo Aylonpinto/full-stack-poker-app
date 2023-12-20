@@ -4,7 +4,9 @@ import Balance from "./Balance";
 
 type Props = {
   balanceData: Record<string, number>;
-  handleSettleBalance(): void;
+  handleSettleBalance: (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => Promise<void>;
 };
 
 const TotalBalance = ({ balanceData, handleSettleBalance }: Props) => {

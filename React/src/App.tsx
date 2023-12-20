@@ -5,12 +5,12 @@ import "./App.css";
 import GameForm from "./components/GameForm";
 import SettleBalanceModal from "./components/SettleBalanceModal";
 import TotalBalance from "./components/TotalBalance";
-import { GameResponse, PlayerResponse } from "./types";
+import { GameResponse, PlayerResponse, PlayersData } from "./types";
 
 function App() {
   const [games, setGames] = useState<GameResponse[]>([]);
   const [gameName, setGameName] = useState("");
-  const [playersData, setPlayersData] = useState([
+  const [playersData, setPlayersData] = useState<PlayersData>([
     { name: "", start_balance: "", end_balance: "" },
   ]);
   const [balanceData, setBalanceData] = useState<Record<string, number>>({});
@@ -35,7 +35,7 @@ function App() {
     setBalanceData(data);
   };
 
-  const handleFormSubmit = async (event) => {
+  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const gameId = (games?.length ? _.maxBy(games, (g) => g.id)!.id : 0) + 1;
     for (const player of playersData) {
@@ -53,8 +53,7 @@ function App() {
         game_id: gameId,
         player_id: playerId ?? 0,
         start_balance: player.start_balance,
-        end_balance:
-          typeof player.end_balance === "number" ? player.end_balance : 0,
+        end_balance: Number(player.end_balance),
       };
       await api.post("/player_games/", playerGameData);
     }
@@ -67,7 +66,9 @@ function App() {
     setPlayersData([{ name: "", start_balance: "", end_balance: "" }]);
   };
 
-  const handleSettleBalance = async (event) => {
+  const handleSettleBalance = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     event.preventDefault();
     const transactions = await api.get("/settle_balance/");
     setSettleBalanceData(transactions.data);
@@ -75,7 +76,7 @@ function App() {
   };
 
   const deletePlayers = async () => {
-    const response = await api.get("/players/");
+    const response = await api.get<PlayerResponse[]>("/players/");
     const ids = response.data.map((p) => p.id);
 
     for (const id of ids) {
