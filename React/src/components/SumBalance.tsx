@@ -1,9 +1,13 @@
-import React, { useEffect } from "react";
-import DialogContent from "@mui/joy/DialogContent";
 import Typography from "@mui/joy/Typography";
 import _ from "lodash";
+import { useEffect } from "react";
+import { PlayersData } from "../types";
 
-export default function SumBalance({ playersData }) {
+type Props = {
+  playersData: PlayersData;
+};
+
+export default function SumBalance({ playersData }: Props) {
   const totalIn = _.sumBy(playersData, (p) => Number(p.start_balance));
   const totalOut = _.sumBy(playersData, (p) => Number(p.end_balance));
 

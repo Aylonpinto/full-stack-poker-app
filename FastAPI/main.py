@@ -98,7 +98,7 @@ async def create_game(game: PokerGameBase, db: db_dependency):
     for player in players:
         start_balance[player.player_id] = player.start_balance
         end_balance[player.player_id] = player.end_balance
-    balance = add_balances(calc.Game(start_balance, end_balance).balance, balance)
+    balance = calc.add_balances(calc.Game(start_balance, end_balance).balance, balance)
     for player_id, value in balance.items():
         db.query(models.PlayerBalance).filter(
             models.PlayerBalance.id == player_id
@@ -184,51 +184,7 @@ async def get_transactions(db: db_dependency):
     balance = {}
     for player in players:
         balance[player.player_name] = player.balance
-    transactions = settle_balance(balance)
-    return transactions
-
-
-def add_balances(balance1, balance2):
-    for player_id, value in balance2.items():
-        try:
-            balance1[player_id] = balance1[player_id] + value
-        except KeyError:
-            balance1[player_id] = value
-    return balance1
-
-
-def settle_balance(balance: dict):
-    sorted_balance = sorted(balance.items(), key=lambda player: player[1])
-    print(sorted_balance)
-    transactions = []
-    player = sorted_balance[0]
-    total = sum(balance.values())
-    while player[1] < 0:
-        other_player = sorted_balance[-1]
-        if -player[1] == other_player[1]:
-            transactions.append(
-                f"{player[0]} pays €{round(-player[1], 2)} to {other_player[0]}"
-            )
-            sorted_balance = sorted_balance[1:-1]
-        elif -player[1] < other_player[1]:
-            transactions.append(
-                f"{player[0]} pays €{round(-player[1], 2)} to {other_player[0]}"
-            )
-            sorted_balance = sorted_balance[1:]
-            sorted_balance[-1] = (other_player[0], other_player[1] + player[1])
-        else:
-            transactions.append(
-                f"{player[0]} pays €{round(other_player[1], 2)} to {other_player[0]}"
-            )
-            sorted_balance = sorted_balance[:-1]
-            sorted_balance[0] = (player[0], player[1] + other_player[1])
-        if len(sorted_balance) <= 1:
-            break
-        player = sorted_balance[0]
-        print(sorted_balance)
-    transactions.append(f"Amount not accounted for: €{round(total, 2)}")
-    for transation in transactions:
-        print(transation)
+    transactions = calc.settle_balance(balance)
     return transactions
 
 

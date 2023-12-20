@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from "react";
-
 import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
+import React, { useEffect, useState } from "react";
 
-export default function SettleBalanceModal({ settleBalanceData }) {
+type Props = {
+  settleBalanceData: string[];
+};
+
+export default function SettleBalanceModal({ settleBalanceData }: Props) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {

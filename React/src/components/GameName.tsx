@@ -1,5 +1,5 @@
-import Input from "@mui/joy/Input";
 import DialogContent from "@mui/joy/DialogContent";
+import Input from "@mui/joy/Input";
 
 type Props = {
   gameName: string;

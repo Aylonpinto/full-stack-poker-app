@@ -1,9 +1,13 @@
-import React from "react";
 import Button from "@mui/joy/Button";
-import Balance from "./Balance";
 import { Container } from "@mui/material";
+import Balance from "./Balance";
 
-const TotalBalance = ({ balanceData, handleSettleBalance }) => {
+type Props = {
+  balanceData: Record<string, number>;
+  handleSettleBalance(): void;
+};
+
+const TotalBalance = ({ balanceData, handleSettleBalance }: Props) => {
   return (
     <Container>
       <h2>Total Balance:</h2>

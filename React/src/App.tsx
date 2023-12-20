@@ -1,27 +1,33 @@
-import React, { useState, useEffect } from "react";
-import "./App.css";
-import api from "./Api";
-import TotalBalance from "./components/TotalBalance";
-import GameForm from "./components/GameForm";
 import _ from "lodash";
+import { useEffect, useState } from "react";
+import api from "./Api";
+import "./App.css";
+import GameForm from "./components/GameForm";
 import SettleBalanceModal from "./components/SettleBalanceModal";
+import TotalBalance from "./components/TotalBalance";
+import { GameResponse, PlayerResponse } from "./types";
 
 function App() {
-  const [games, setGames] = useState([]);
+  const [games, setGames] = useState<GameResponse[]>([]);
   const [gameName, setGameName] = useState("");
   const [playersData, setPlayersData] = useState([
     { name: "", start_balance: "", end_balance: "" },
   ]);
-  const [balanceData, setBalanceData] = useState({});
-  const [settleBalanceData, setSettleBalanceData] = useState([]);
+  const [balanceData, setBalanceData] = useState<Record<string, number>>({});
+  const [settleBalanceData, setSettleBalanceData] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchGames();
+    fetchBalanceData();
+  }, []);
 
   const fetchGames = async () => {
-    const response = await api.get("/games/");
+    const response = await api.get<GameResponse[]>("/games/");
     setGames(response.data ?? []);
   };
 
   const fetchBalanceData = async () => {
-    const response = await api.get("/players/");
+    const response = await api.get<PlayerResponse[]>("/players/");
     const data: Record<string, number> = {};
     for (const player of response.data) {
       data[player.player_name] = player.balance;
@@ -29,27 +35,10 @@ function App() {
     setBalanceData(data);
   };
 
-  useEffect(() => {
-    fetchGames();
-    fetchBalanceData();
-  }, []);
-
-  const handleDeleteGames = async (event) => {
-    event.preventDefault();
-    const ids = games.map((g) => g.id);
-
-    for (const id of ids) {
-      await api.delete(`/games/${id}`);
-    }
-
-    fetchGames();
-  };
-
   const handleFormSubmit = async (event) => {
     event.preventDefault();
-    const gameId = (games.length ? _.maxBy(games, (g) => g.id).id : 0) + 1;
+    const gameId = (games?.length ? _.maxBy(games, (g) => g.id)!.id : 0) + 1;
     for (const player of playersData) {
-      console.log(balanceData[player.name], player.name, balanceData);
       if (typeof balanceData[player.name] === "undefined") {
         await api.post("/players/", { player_name: player.name, balance: 0 });
       }

@@ -24,6 +24,50 @@ def get_players():
     return names_of_the_players
 
 
+def add_balances(balance1, balance2):
+    for player_id, value in balance2.items():
+        try:
+            balance1[player_id] = balance1[player_id] + value
+        except KeyError:
+            balance1[player_id] = value
+    return balance1
+
+
+def settle_balance(balance: dict):
+    sorted_balance = sorted(balance.items(), key=lambda player: player[1])
+    print(sorted_balance)
+    transactions = []
+    player = sorted_balance[0]
+    total = sum(balance.values())
+    while player[1] < 0:
+        other_player = sorted_balance[-1]
+        if -player[1] == other_player[1]:
+            transactions.append(
+                f"{player[0]} pays €{round(-player[1], 2)} to {other_player[0]}"
+            )
+            sorted_balance = sorted_balance[1:-1]
+        elif -player[1] < other_player[1]:
+            transactions.append(
+                f"{player[0]} pays €{round(-player[1], 2)} to {other_player[0]}"
+            )
+            sorted_balance = sorted_balance[1:]
+            sorted_balance[-1] = (other_player[0], other_player[1] + player[1])
+        else:
+            transactions.append(
+                f"{player[0]} pays €{round(other_player[1], 2)} to {other_player[0]}"
+            )
+            sorted_balance = sorted_balance[:-1]
+            sorted_balance[0] = (player[0], player[1] + other_player[1])
+        if len(sorted_balance) <= 1:
+            break
+        player = sorted_balance[0]
+        print(sorted_balance)
+    transactions.append(f"Amount not accounted for: €{round(total, 2)}")
+    for transation in transactions:
+        print(transation)
+    return transactions
+
+
 def get_in_for(names):
     print("How much are you in for?")
     players_in_for = {}

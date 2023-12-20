@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react";
+import Add from "@mui/icons-material/Add";
 import Button from "@mui/joy/Button";
+import DialogContent from "@mui/joy/DialogContent";
+import DialogTitle from "@mui/joy/DialogTitle";
 import FormControl from "@mui/joy/FormControl";
 import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
-import DialogTitle from "@mui/joy/DialogTitle";
-import DialogContent from "@mui/joy/DialogContent";
 import Stack from "@mui/joy/Stack";
-import Add from "@mui/icons-material/Add";
-import PlayerBalance from "./PlayerBalance";
-import GameName from "./GameName";
-import SumBalance from "./SumBalance";
+import React, { useEffect, useState } from "react";
 import { PlayersData } from "../types";
+import GameName from "./GameName";
+import PlayerBalance from "./PlayerBalance";
+import SumBalance from "./SumBalance";
 
 type Props = {
   handleSubmit(event: React.FormEvent<HTMLFormElement>): void;

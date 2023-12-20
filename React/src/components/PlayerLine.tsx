@@ -1,6 +1,6 @@
-import { useState } from "react";
 import Input from "@mui/joy/Input";
-import { PlayerData, Callback, PlayersData } from "../types";
+import { useState } from "react";
+import { Callback, PlayerData, PlayersData } from "../types";
 
 type Props = {
   playerData: PlayerData;
