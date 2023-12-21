@@ -21,7 +21,7 @@ const pageToPath = (page: string) => {
   return first[0].toLowerCase() + first.slice(1);
 };
 
-const pages = ["Home", "Live mode", "History"];
+const pages = ["Home", "Live mode"];
 
 function ResponsiveAppBar({ appName }: Props) {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
@@ -45,7 +45,6 @@ function ResponsiveAppBar({ appName }: Props) {
             variant="h6"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
@@ -105,7 +104,6 @@ function ResponsiveAppBar({ appName }: Props) {
             variant="h5"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
             sx={{
               mr: 2,
               display: { xs: "flex", md: "none" },
