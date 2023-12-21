@@ -1,13 +1,14 @@
 # main.py
-from fastapi import FastAPI, HTTPException, Depends
 from typing import Annotated, Coroutine, List
-from sqlalchemy.orm import Session
-import sqlalchemy as sql
-from pydantic import BaseModel
-from database import SessionLocal, engine
-import models
+
 import calculations as calc
+import models
+import sqlalchemy as sql
+from database import SessionLocal, engine
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 app = FastAPI()
 
@@ -19,7 +20,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

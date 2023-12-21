@@ -1,12 +1,13 @@
-import _ from "lodash";
-import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
+import Table from "@mui/joy/Table";
+import _ from "lodash";
 
 type Props = {
   data: Record<string, number>;
+  totalBalance: number;
 };
 
-export default function Balance({ data }: Props) {
+export default function Balance({ data, totalBalance }: Props) {
   const body = _.map(data, (balance, name) => {
     return (
       <tr>
@@ -33,6 +34,12 @@ export default function Balance({ data }: Props) {
           </tr>
         </thead>
         <tbody>{body}</tbody>
+        <tfoot>
+          <tr>
+            <th>Total:</th>
+            <th>{totalBalance}</th>
+          </tr>
+        </tfoot>
       </Table>
     </Sheet>
   );

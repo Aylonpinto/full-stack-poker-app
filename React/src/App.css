@@ -36,3 +36,29 @@
     transform: rotate(360deg);
   }
 }
+
+/* Standaard stijlen voor alle schermgroottes */
+.PokerIconMob {
+  display: flex;
+  margin-right: 1rem;
+}
+
+/* Stijlen voor schermen groter dan 600px maar kleiner dan 960px (gemiddelde schermen) */
+@media only screen and (min-width: 901px) {
+  .PokerIconMob {
+    display: none;
+  }
+}
+
+/* Standaard stijlen voor alle schermgroottes */
+.PokerIconDesk {
+  display: flex;
+  margin-right: 1rem;
+}
+
+/* Stijlen voor schermen kleiner dan 600px (extra kleine schermen) */
+@media only screen and (max-width: 900px) {
+  .PokerIconDesk {
+    display: none;
+  }
+}
