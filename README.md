@@ -2,13 +2,17 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## Start the appp
 
-In the project directory, you can run:
+In the React directory, you can run:
 
 ### `npm start`
 
-Runs the app in the development mode.\
+Then on another terminal navigate to the FastAPI directory and run:
+
+### `uvicorn main:app --reload --host 0.0.0.0 --port 8000`
+
+This runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
 The page will reload when you make changes.\

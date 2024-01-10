@@ -1,20 +1,27 @@
-import DialogContent from "@mui/joy/DialogContent";
+import { FormLabel } from "@mui/joy";
 import Input from "@mui/joy/Input";
+import { ReactNode } from "react";
 
 type Props = {
   gameName: string;
   setGameName(name: string): void;
+  endDecorator?: ReactNode;
 };
 
-export default function GameName({ gameName, setGameName }: Props) {
+export default function GameName({
+  gameName,
+  setGameName,
+  endDecorator,
+}: Props) {
   return (
     <>
-      <DialogContent>What is the name of your game?</DialogContent>
+      <FormLabel>What is the name of your game?</FormLabel>
       <Input
         placeholder="Game name"
         variant="soft"
         value={gameName}
         onChange={(e) => setGameName(e.target.value)}
+        endDecorator={endDecorator ?? <></>}
         required
       />
     </>

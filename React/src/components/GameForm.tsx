@@ -2,7 +2,6 @@ import Add from "@mui/icons-material/Add";
 import Button from "@mui/joy/Button";
 import DialogContent from "@mui/joy/DialogContent";
 import DialogTitle from "@mui/joy/DialogTitle";
-import FormControl from "@mui/joy/FormControl";
 import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
 import Stack from "@mui/joy/Stack";
@@ -57,20 +56,16 @@ export default function GameForm({
             }}
           >
             <Stack spacing={3}>
-              <FormControl>
-                <PlayerBalance
-                  playersData={playersData}
-                  setPlayersData={setPlayersData}
-                />
-                <br />
-                <SumBalance playersData={playersData} />
+              <PlayerBalance
+                playersData={playersData}
+                setPlayersData={setPlayersData}
+              />
+              <SumBalance playersData={playersData} />
 
-                <GameName gameName={gameName} setGameName={setGameName} />
-                <br />
-                <Button type="submit" variant="soft" color="primary">
-                  Add game
-                </Button>
-              </FormControl>
+              <GameName gameName={gameName} setGameName={setGameName} />
+              <Button type="submit" variant="soft" color="primary">
+                Add game
+              </Button>
             </Stack>
           </form>
         </ModalDialog>

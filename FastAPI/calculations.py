@@ -41,6 +41,7 @@ def settle_balance(balance: dict):
     total = sum(balance.values())
     while player[1] < 0:
         other_player = sorted_balance[-1]
+        print(player[1], other_player[1])
         if -player[1] == other_player[1]:
             amount = '€' + str(round(-player[1], 2)) if round(-player[1], 2) >= 0 else '-€' + str(-round(-player[1], 2))
             transactions.append(
@@ -55,12 +56,14 @@ def settle_balance(balance: dict):
             sorted_balance = sorted_balance[1:]
             sorted_balance[-1] = (other_player[0], other_player[1] + player[1])
         else:
+            print('here')
             amount = '€' + str(round(other_player[1], 2)) if round(other_player[1], 2) >= 0 else '-€' + str(-round(other_player[1], 2))
             transactions.append(
                 f"{player[0]} pays {amount} to {other_player[0]}"
             )
+            print(sorted_balance[:-1])
             sorted_balance = sorted_balance[:-1]
-            sorted_balance[0] = (player[0], player[1] + other_player[1])
+            player = (player[0], player[1] + other_player[1])
         if len(sorted_balance) <= 1:
             break
         player = sorted_balance[0]

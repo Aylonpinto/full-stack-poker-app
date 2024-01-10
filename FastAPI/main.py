@@ -63,6 +63,19 @@ class PlayerGamesModel(PlayerGamesBase):
     class Config:
         orm_mode = True
 
+class LiveGameBase(BaseModel):
+    player_id: int
+    start_balance: float
+    end_balance: float
+
+
+class LiveGameModel(LiveGameBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
 
 def get_db():
     db = SessionLocal()
@@ -75,6 +88,8 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 models.Base.metadata.create_all(bind=engine)
+
+
 
 
 @app.post("/games/", response_model=PokerGameModel)
@@ -138,6 +153,21 @@ async def insert_player(player: PlayerBalanceBase, db: db_dependency):
     return db_player
 
 
+@app.post("/reset_player/{id}", response_model=PlayerBalanceModel)
+async def reset_player(id: int, db: db_dependency):
+    player = db.query(models.PlayerBalance).filter(
+        models.PlayerBalance.id == id
+    ).first()
+
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    player.balance = 0
+    db.commit()
+    
+    return player
+
+
 @app.get("/players/", response_model=List[PlayerBalanceModel])
 async def read_players(db: db_dependency, skip: int = 0, limit: int = 100):
     players = (
@@ -173,7 +203,7 @@ async def insert_player_game(player: PlayerGamesBase, db: db_dependency):
     return db_player
 
 
-@app.get("/players_games/", response_model=List[PlayerGamesModel])
+@app.get("/player_games/", response_model=List[PlayerGamesModel])
 async def read_player_games(db: db_dependency, skip: int = 0, limit: int = 100):
     players = db.query(models.PlayerGames).offset(skip).limit(limit).all()
     return players
@@ -187,6 +217,43 @@ async def get_transactions(db: db_dependency):
         balance[player.player_name] = player.balance
     transactions = calc.settle_balance(balance)
     return transactions
+
+@app.post('/live/', response_model=LiveGameModel)
+async def insert_live_player(player: LiveGameBase, db: db_dependency):
+    exists = db.query(models.LiveGame).filter(
+        models.LiveGame.player_id == player.player_id
+    ).first()
+    if exists:
+        exists.start_balance = player.start_balance
+        exists.end_balance = player.end_balance
+        db.commit()
+        db.refresh(exists)
+        return exists
+    new_player = models.LiveGame(**player.dict())
+    db.add(new_player)
+    db.commit()
+    db.refresh(new_player)
+    return new_player
+
+@app.get('/live/', response_model=List[LiveGameModel])
+async def get_live_players(db: db_dependency, skip: int = 0, limit: int = 100):
+    players = (
+        db.query(models.LiveGame)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+    return players
+
+@app.delete('/live/')
+async def delete_live(db: db_dependency):
+    players = await get_live_players(db)
+    for player in players:
+        db.delete(player)
+    db.commit()
+    return {"ok": True}
+
+
 
 
 # @app.delete("/games/")

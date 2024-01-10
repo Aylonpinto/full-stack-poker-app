@@ -11,8 +11,6 @@ export default function SumBalance({ playersData }: Props) {
   const totalIn = _.sumBy(playersData, (p) => Number(p.start_balance));
   const totalOut = _.sumBy(playersData, (p) => Number(p.end_balance));
 
-  playersData.map((p) => console.log(typeof p.start_balance === "number"));
-
   const totalZero = totalOut === totalIn;
   const text = `The sum of in and out is ${totalOut - totalIn}`;
 

@@ -11,12 +11,14 @@ type Props = {
   playersData: PlayersData;
   setPlayersData(callback: Callback<PlayersData> | PlayersData): void;
   buyin: number | string;
+  handleLivePlayerSubmit: () => Promise<void>;
 };
 
-export default function LivePlayer({
+export default function LivePlayers({
   playersData,
   setPlayersData,
   buyin,
+  handleLivePlayerSubmit,
 }: Props) {
   const addPlayer = () => {
     setPlayersData((prev) => [
@@ -60,38 +62,27 @@ export default function LivePlayer({
       <List>
         {playersData.map((player, i) => {
           if (player.end_balance !== "") return <></>;
-          return i === playersData.length - 1 ? (
-            <>
-              <ListItem>
-                <LivePlayerLine
-                  playerData={player}
-                  setPlayerData={setPlayerData(i)}
-                  buyin={buyin === "" ? 0 : Number(buyin)}
-                />
-              </ListItem>
-              <ListItem>
-                <Button
-                  variant="soft"
-                  color="primary"
-                  onClick={() => addPlayer()}
-                  startDecorator={<Add />}
-                  size="sm"
-                >
-                  Add Player
-                </Button>
-              </ListItem>
-            </>
-          ) : (
+          return (
             <ListItem>
               <LivePlayerLine
                 playerData={player}
                 setPlayerData={setPlayerData(i)}
                 buyin={buyin === "" ? 0 : Number(buyin)}
+                handleLivePlayerSubmit={handleLivePlayerSubmit}
               />
             </ListItem>
           );
         })}
       </List>
+      <Button
+        variant="soft"
+        color="primary"
+        onClick={() => addPlayer()}
+        startDecorator={<Add />}
+        size="sm"
+      >
+        Add Player
+      </Button>
     </Sheet>
   );
 }

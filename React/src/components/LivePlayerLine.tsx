@@ -1,11 +1,11 @@
-import { Add, Close } from "@mui/icons-material";
+import { Add, ExitToApp } from "@mui/icons-material";
 import {
   Button,
+  FormControl,
   FormLabel,
   IconButton,
   Modal,
   Sheet,
-  Typography,
 } from "@mui/joy";
 import Input from "@mui/joy/Input";
 import { useState } from "react";
@@ -15,15 +15,17 @@ type Props = {
   playerData: PlayerData;
   setPlayerData: (data: PlayerData) => void;
   buyin: number;
+  handleLivePlayerSubmit: () => Promise<void>;
 };
 
 export default function LivePlayerLine({
   playerData,
   setPlayerData,
   buyin,
+  handleLivePlayerSubmit,
 }: Props) {
-  const [name, setName] = useState(playerData.name);
   const [open, setOpen] = useState<boolean>(false);
+  const [endValue, setEndValue] = useState<string | number>("");
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let updatedName = event.target.value;
@@ -36,7 +38,6 @@ export default function LivePlayerLine({
     if (updatedName.length) {
       updatedName = updatedName[0].toUpperCase() + updatedName.slice(1);
     }
-    setName(updatedName);
 
     setPlayerData({ ...playerData, name: updatedName });
   };
@@ -49,12 +50,19 @@ export default function LivePlayerLine({
     setPlayerData({ ...playerData, start_balance: amount });
   };
 
+  const handleFormSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
+    setPlayerData({ ...playerData, end_balance: endValue });
+    setOpen(false);
+    handleLivePlayerSubmit();
+  };
+
   return (
     <>
       <Input
         placeholder="Name"
         variant="soft"
-        value={name}
+        value={playerData.name}
         onChange={(e) => handleNameChange(e)}
         sx={{ flex: "0 2 auto" }}
         size="sm"
@@ -91,40 +99,49 @@ export default function LivePlayerLine({
         size="sm"
         onClick={() => setOpen(true)}
       >
-        <Close />
+        <ExitToApp />
       </IconButton>
       <Modal
         aria-labelledby="modal-title"
         aria-describedby="modal-desc"
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={(e) => handleFormSubmit()}
         sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
       >
-        <Sheet
-          variant="outlined"
-          sx={{
-            maxWidth: 500,
-            borderRadius: "md",
-            p: 3,
-            boxShadow: "lg",
-          }}
-        >
-          <FormLabel>
-            What is the end balance of {`${playerData.name}?`}
-          </FormLabel>
-          <Input
-            placeholder="Exit amount"
-            variant="soft"
-            type="number"
-            startDecorator={"€"}
-            value={playerData.end_balance}
-            onChange={(e) =>
-              setPlayerData({ ...playerData, end_balance: e.target.value })
-            }
-          />
-
-          <Typography id="modal-desc" textColor="text.tertiary"></Typography>
-        </Sheet>
+        <form onSubmit={(e) => handleFormSubmit(e)}>
+          <Sheet
+            variant="outlined"
+            sx={{
+              maxWidth: 500,
+              borderRadius: "md",
+              p: 3,
+              boxShadow: "lg",
+            }}
+          >
+            <FormControl>
+              <FormLabel>
+                What is the end balance of {`${playerData.name}?`}
+              </FormLabel>
+              <Input
+                placeholder="Exit amount"
+                variant="soft"
+                type="number"
+                startDecorator={"€"}
+                value={endValue}
+                onChange={(e) => setEndValue(e.target.value)}
+              />
+              <Button
+                variant="soft"
+                color="danger"
+                startDecorator={<ExitToApp />}
+                type="submit"
+                sx={{ margin: "10px 0px" }}
+              >
+                Exit player
+              </Button>
+            </FormControl>
+          </Sheet>
+        </form>
       </Modal>
     </>
   );

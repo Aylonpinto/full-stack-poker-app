@@ -1,18 +1,17 @@
 import { CssBaseline } from "@mui/joy";
 import React, { useEffect, useRef } from "react";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import ResponsiveAppBar from "./Appbar";
 
 export default function Root() {
   const first = useRef(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
+    if (location.pathname === "/") {
+      navigate("/home");
     }
-    navigate("/home");
   }, []);
 
   return (

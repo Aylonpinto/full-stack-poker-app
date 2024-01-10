@@ -75,15 +75,15 @@ function Home() {
     event.preventDefault();
     const transactions = await api.get("/settle_balance/");
     setSettleBalanceData(transactions.data);
-    deletePlayers();
+    clearPlayers();
   };
 
-  const deletePlayers = async () => {
+  const clearPlayers = async () => {
     const response = await api.get<PlayerResponse[]>("/players/");
     const ids = response.data.map((p) => p.id);
 
     for (const id of ids) {
-      await api.delete(`/players/${id}`);
+      await api.post(`/reset_player/${id}`);
     }
     fetchBalanceData();
   };

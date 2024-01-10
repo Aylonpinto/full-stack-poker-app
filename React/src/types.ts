@@ -17,3 +17,23 @@ export type GameResponse = {
   game_name: string;
   id: number;
 };
+
+export type LivePlayer = {
+  id: number;
+  player_id: number;
+  start_balance: number;
+  end_balance: number;
+};
+
+export type PlayerGame = {
+  id: number;
+  game_id: number;
+  player_id: number;
+  start_balance: number;
+  end_balance: number;
+};
+
+export type Games = {
+  id: number;
+  game_name: string;
+}[];
