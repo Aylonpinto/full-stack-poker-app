@@ -149,47 +149,6 @@ export default function Live() {
     setBuyin(event.target.value);
   };
 
-  const handleLivePlayerSubmit = async () => {
-    // const currentPlayer = livePlayersData.find((p) => p.end_balance !== "");
-    // if (!currentPlayer) return;
-    // const games = (await api.get<GameResponse[]>("/games/")).data;
-    // const gameId = (games?.length ? _.maxBy(games, (g) => g.id)!.id : 0) + 1;
-    // const players = (await api.get<PlayerResponse[]>("/players/")).data;
-    // const dbPlayer = players.find((p) => p.player_name === currentPlayer?.name);
-    // let playerId = undefined;
-    // if (!dbPlayer) {
-    //   await api.post("/players/", {
-    //     player_name: currentPlayer.name,
-    //     balance: 0,
-    //   });
-    //   playerId = (await api.get<PlayerResponse[]>("/players/")).data.find(
-    //     (p) => p.player_name === currentPlayer.name,
-    //   )?.id;
-    // } else {
-    //   playerId = dbPlayer.id;
-    // }
-    // if (!gameId || !playerId) {
-    //   throw new Error(
-    //     `Invalid player id ${playerId} or game id ${gameId}. Not able to post player ${currentPlayer.name}`,
-    //   );
-    // }
-    // const start = Number(currentPlayer.start_balance);
-    // const end = Number(currentPlayer.end_balance);
-    // const playerGameData = {
-    //   game_id: gameId,
-    //   player_id: playerId ?? 0,
-    //   start_balance: start,
-    //   end_balance: end,
-    // };
-    // await api.post("/player_games/", playerGameData);
-    // const livePlayer: Omit<LivePlayer, "id"> = {
-    //   player_id: playerId,
-    //   start_balance: start,
-    //   end_balance: end,
-    // };
-    // await api.post("/live/", livePlayer);
-  };
-
   const handleGameSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -263,7 +222,6 @@ export default function Live() {
           playersData={livePlayersData}
           setPlayersData={setLivePlayersData}
           buyin={buyin}
-          handleLivePlayerSubmit={handleLivePlayerSubmit}
         />
       </Stack>
       <Typography level="body-md">

@@ -11,14 +11,12 @@ type Props = {
   playersData: PlayersData;
   setPlayersData(callback: Callback<PlayersData> | PlayersData): void;
   buyin: number | string;
-  handleLivePlayerSubmit: () => Promise<void>;
 };
 
 export default function LivePlayers({
   playersData,
   setPlayersData,
   buyin,
-  handleLivePlayerSubmit,
 }: Props) {
   const addPlayer = () => {
     setPlayersData((prev) => [
@@ -68,7 +66,6 @@ export default function LivePlayers({
                 playerData={player}
                 setPlayerData={setPlayerData(i)}
                 buyin={buyin === "" ? 0 : Number(buyin)}
-                handleLivePlayerSubmit={handleLivePlayerSubmit}
               />
             </ListItem>
           );

@@ -15,14 +15,12 @@ type Props = {
   playerData: PlayerData;
   setPlayerData: (data: PlayerData) => void;
   buyin: number;
-  handleLivePlayerSubmit: () => Promise<void>;
 };
 
 export default function LivePlayerLine({
   playerData,
   setPlayerData,
   buyin,
-  handleLivePlayerSubmit,
 }: Props) {
   const [open, setOpen] = useState<boolean>(false);
   const [endValue, setEndValue] = useState<string | number>("");
@@ -54,7 +52,6 @@ export default function LivePlayerLine({
     event?.preventDefault();
     setPlayerData({ ...playerData, end_balance: endValue });
     setOpen(false);
-    handleLivePlayerSubmit();
   };
 
   return (
