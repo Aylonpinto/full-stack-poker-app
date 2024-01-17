@@ -21,6 +21,7 @@ import {
   PlayerResponse,
   PlayersData,
 } from "../types";
+import ExitedPlayers from "./ExitedPlayers";
 import GameName from "./GameName";
 import LivePlayers from "./LivePlayers";
 
@@ -227,6 +228,9 @@ export default function Live() {
       <Typography level="body-md">
         The total money on the table is: €{totalAmount}
       </Typography>
+      <ExitedPlayers
+        playersData={livePlayersData.filter((p) => p.end_balance !== "")}
+      />
       <br />
       <form onSubmit={handleGameSubmit}>
         <FormControl>
