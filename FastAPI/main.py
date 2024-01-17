@@ -212,6 +212,8 @@ async def read_player_games(db: db_dependency, skip: int = 0, limit: int = 100):
 @app.get("/settle_balance/")
 async def get_transactions(db: db_dependency):
     players = db.query(models.PlayerBalance).all()
+    if not players:
+        return []
     balance = {}
     for player in players:
         balance[player.player_name] = player.balance
