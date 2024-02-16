@@ -10,35 +10,23 @@ import {
 import Input from "@mui/joy/Input";
 import { useState } from "react";
 import { PlayerData } from "../types";
+import PlayerStartInput from "./PlayerStartInput";
 
 type Props = {
   playerData: PlayerData;
   setPlayerData: (data: PlayerData) => void;
   buyin: number;
+  playerNames: string[];
 };
 
 export default function LivePlayerLine({
   playerData,
   setPlayerData,
   buyin,
+  playerNames,
 }: Props) {
   const [open, setOpen] = useState<boolean>(false);
   const [endValue, setEndValue] = useState<string | number>("");
-
-  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let updatedName = event.target.value;
-    while (updatedName[0] === " " || updatedName.slice(-1) === " ") {
-      updatedName =
-        updatedName[0] === " "
-          ? updatedName.slice(1)
-          : updatedName.slice(0, -1);
-    }
-    if (updatedName.length) {
-      updatedName = updatedName[0].toUpperCase() + updatedName.slice(1);
-    }
-
-    setPlayerData({ ...playerData, name: updatedName });
-  };
 
   const handleExtraBuyin = () => {
     const amount =
@@ -56,27 +44,10 @@ export default function LivePlayerLine({
 
   return (
     <>
-      <Input
-        placeholder="Name"
-        variant="soft"
-        value={playerData.name}
-        onChange={(e) => handleNameChange(e)}
-        sx={{ flex: "0 2 auto" }}
-        size="sm"
-        required
-      />
-      <Input
-        placeholder="Start Balance"
-        variant="soft"
-        type="number"
-        value={playerData.start_balance}
-        onChange={(e) =>
-          setPlayerData({ ...playerData, start_balance: e.target.value })
-        }
-        startDecorator={"€"}
-        sx={{ flex: "0 3 auto" }}
-        size="sm"
-        required
+      <PlayerStartInput
+        setPlayerData={setPlayerData}
+        playerData={playerData}
+        playerNames={playerNames}
       />
       <Button
         variant="outlined"

@@ -4,14 +4,20 @@ import FormHelperText from "@mui/joy/FormHelperText";
 import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import { Callback, PlayersData } from "../types";
+import { setPlayerData } from "../utils";
 import PlayerLine from "./PlayerLine";
 
 type Props = {
   playersData: PlayersData;
   setPlayersData(callback: Callback<PlayersData> | PlayersData): void;
+  playerNames: string[];
 };
 
-export default function PlayerBalance({ playersData, setPlayersData }: Props) {
+export default function PlayerBalance({
+  playersData,
+  setPlayersData,
+  playerNames,
+}: Props) {
   const addPlayer = () => {
     setPlayersData((prev) => [
       ...prev,
@@ -27,13 +33,14 @@ export default function PlayerBalance({ playersData, setPlayersData }: Props) {
             <ListItem>
               <PlayerLine
                 playerData={player}
-                setPlayerData={setPlayersData}
-                index={i}
+                setPlayerData={setPlayerData(i, setPlayersData)}
+                playerNames={playerNames}
               />
               <IconButton
                 variant="soft"
                 color="primary"
                 onClick={() => addPlayer()}
+                size="sm"
               >
                 <AddIcon />
               </IconButton>
@@ -42,8 +49,8 @@ export default function PlayerBalance({ playersData, setPlayersData }: Props) {
             <ListItem>
               <PlayerLine
                 playerData={player}
-                setPlayerData={setPlayersData}
-                index={i}
+                setPlayerData={setPlayerData(i, setPlayersData)}
+                playerNames={playerNames}
               />
             </ListItem>
           );

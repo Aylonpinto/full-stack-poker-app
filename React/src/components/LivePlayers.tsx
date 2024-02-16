@@ -1,22 +1,28 @@
 import { default as Add } from "@mui/icons-material/Add";
+import NotInterestedIcon from "@mui/icons-material/NotInterested";
 import { Button, Sheet } from "@mui/joy";
 import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import _ from "lodash";
 import { useEffect } from "react";
-import { Callback, PlayerData, PlayersData } from "../types";
+import { Callback, PlayersData } from "../types";
+import { setPlayerData } from "../utils";
 import LivePlayerLine from "./LivePlayerLine";
 
 type Props = {
   playersData: PlayersData;
   setPlayersData(callback: Callback<PlayersData> | PlayersData): void;
   buyin: number | string;
+  playerNames: string[];
+  handleClearPlayers(): void;
 };
 
 export default function LivePlayers({
   playersData,
   setPlayersData,
   buyin,
+  playerNames,
+  handleClearPlayers,
 }: Props) {
   const addPlayer = () => {
     setPlayersData((prev) => [
@@ -45,16 +51,6 @@ export default function LivePlayers({
     }
   }, [buyin]);
 
-  const setPlayerData = (index: number) => {
-    return (data: PlayerData) => {
-      setPlayersData((prev) => [
-        ...prev.slice(0, index),
-        { ...data },
-        ...prev.slice(index + 1),
-      ]);
-    };
-  };
-
   return (
     <Sheet color="primary">
       <List>
@@ -64,8 +60,9 @@ export default function LivePlayers({
             <ListItem>
               <LivePlayerLine
                 playerData={player}
-                setPlayerData={setPlayerData(i)}
+                setPlayerData={setPlayerData(i, setPlayersData)}
                 buyin={buyin === "" ? 0 : Number(buyin)}
+                playerNames={playerNames}
               />
             </ListItem>
           );
@@ -79,6 +76,16 @@ export default function LivePlayers({
         size="sm"
       >
         Add Player
+      </Button>
+      <Button
+        variant="soft"
+        color="danger"
+        onClick={() => handleClearPlayers()}
+        startDecorator={<NotInterestedIcon />}
+        size="sm"
+        sx={{ float: "right" }}
+      >
+        Clear
       </Button>
     </Sheet>
   );

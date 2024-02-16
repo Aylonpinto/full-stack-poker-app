@@ -102,6 +102,7 @@ function Home() {
         playersData={playersData}
         setPlayersData={setPlayersData}
         handleSubmit={handleFormSubmit}
+        playerNames={Object.keys(balanceData)}
       />
       <SettleBalanceModal settleBalanceData={settleBalanceData} />
     </div>

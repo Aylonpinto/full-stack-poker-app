@@ -1,10 +1,9 @@
 import { CssBaseline } from "@mui/joy";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import ResponsiveAppBar from "./Appbar";
 
 export default function Root() {
-  const first = useRef(true);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -18,7 +17,7 @@ export default function Root() {
     <React.Fragment>
       <CssBaseline enableColorScheme />
       {/* The rest of your application */}
-      <ResponsiveAppBar appName="Poker Tracker" />
+      <ResponsiveAppBar appName="Live Tracker" />
       <Outlet />
     </React.Fragment>
   );

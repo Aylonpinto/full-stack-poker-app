@@ -16,7 +16,6 @@ import { useNavigate } from "react-router";
 import api from "../Api";
 import {
   GameResponse,
-  Games,
   LivePlayer,
   PlayerResponse,
   PlayersData,
@@ -37,6 +36,7 @@ export default function Live() {
   const [gameName, setGameName] = useState("");
   const [disabled, setDisabled] = useState(true);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [playerNames, setPlayerNames] = useState<string[]>([]);
 
   const navigate = useNavigate();
 
@@ -102,7 +102,6 @@ export default function Live() {
   const fetchLiveData = async () => {
     const response = await api.get<LivePlayer[]>("/live/");
     const players = (await api.get<PlayerResponse[]>("/players/")).data;
-    const gameIds = _.map((await api.get<Games>("/games/")).data, (g) => g.id);
     const playersData: PlayersData = [];
 
     _.each(response.data, (live) => {
@@ -116,6 +115,7 @@ export default function Live() {
     if (playersData.length) {
       setLivePlayersData(playersData);
     }
+    setPlayerNames(players.map((p) => p.player_name));
   };
 
   const asyncDBSync = async () => {
@@ -196,6 +196,17 @@ export default function Live() {
     navigate("/home");
   };
 
+  const handleClearPlayers = async () => {
+    await api.delete("/live");
+    setLivePlayersData([
+      {
+        name: "",
+        start_balance: "",
+        end_balance: "",
+      },
+    ]);
+  };
+
   return (
     <Container>
       <Typography level="h4">Welcome to live mode!</Typography>
@@ -223,6 +234,8 @@ export default function Live() {
           playersData={livePlayersData}
           setPlayersData={setLivePlayersData}
           buyin={buyin}
+          playerNames={playerNames}
+          handleClearPlayers={handleClearPlayers}
         />
       </Stack>
       <Typography level="body-md">

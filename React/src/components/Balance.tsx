@@ -9,6 +9,7 @@ type Props = {
 
 export default function Balance({ data, totalBalance }: Props) {
   const body = _.map(data, (balance, name) => {
+    if (!balance) return;
     return (
       <tr>
         <td>{name}</td>

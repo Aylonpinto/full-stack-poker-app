@@ -17,6 +17,7 @@ type Props = {
   setGameName(name: string): void;
   playersData: PlayersData;
   setPlayersData(players: PlayersData): void;
+  playerNames: string[];
 };
 
 export default function GameForm({
@@ -25,6 +26,7 @@ export default function GameForm({
   setGameName,
   playersData,
   setPlayersData,
+  playerNames,
 }: Props) {
   const [open, setOpen] = useState(false);
 
@@ -59,6 +61,7 @@ export default function GameForm({
               <PlayerBalance
                 playersData={playersData}
                 setPlayersData={setPlayersData}
+                playerNames={playerNames}
               />
               <SumBalance playersData={playersData} />
 
