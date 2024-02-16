@@ -1,7 +1,13 @@
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import api from "./../Api";
-import { GameResponse, PlayerResponse, PlayersData } from "./../types";
+import {
+  GameResponse,
+  PlayerGame,
+  PlayerResponse,
+  PlayersData,
+} from "./../types";
+import Balance from "./Balance";
 import GameForm from "./GameForm";
 import SettleBalanceModal from "./SettleBalanceModal";
 import TotalBalance from "./TotalBalance";
@@ -15,10 +21,12 @@ function Home() {
   const [balanceData, setBalanceData] = useState<Record<string, number>>({});
   const [totalBalance, setTotalBalance] = useState(0);
   const [settleBalanceData, setSettleBalanceData] = useState<string[]>([]);
+  const [historyData, setHistoryData] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetchGames();
     fetchBalanceData();
+    fetchHistoryData();
   }, []);
 
   const fetchGames = async () => {
@@ -36,6 +44,33 @@ function Home() {
     }
     setTotalBalance(total);
     setBalanceData(data);
+  };
+
+  const fetchHistoryData = async () => {
+    const playerGames = (await api.get<PlayerGame[]>("/player_games/")).data;
+    const players = (await api.get<PlayerResponse[]>("/players/")).data;
+    const data: Record<string, number> = {};
+    let total = 0;
+    for (const pg of playerGames) {
+      const playerName = _.find(players, (p) => p.id === pg.player_id)
+        ?.player_name;
+      if (!playerName) continue;
+      const balance = pg.end_balance - pg.start_balance;
+      data[playerName] = data[playerName] | 0;
+      data[playerName] += balance;
+      total += balance;
+    }
+    const histItems = Object.keys(data).map(
+      (player) => [player, data[player]] as [string, number],
+    );
+    histItems.sort((a, b) => b[1] - a[1]);
+
+    const sortAndRounded: Record<string, number> = {};
+    _.each(histItems, (item) => {
+      sortAndRounded[item[0]] = _.round(item[1], 2);
+    });
+
+    setHistoryData(sortAndRounded);
   };
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -90,12 +125,13 @@ function Home() {
 
   return (
     <div className="App">
+      <h2>Open balance:</h2>
+
       <TotalBalance
         balanceData={balanceData}
         totalBalance={totalBalance}
         handleSettleBalance={handleSettleBalance}
       />
-      <h2>Create Poker Game</h2>
       <GameForm
         gameName={gameName}
         setGameName={setGameName}
@@ -104,7 +140,12 @@ function Home() {
         handleSubmit={handleFormSubmit}
         playerNames={Object.keys(balanceData)}
       />
+      <br />
+      <br />
       <SettleBalanceModal settleBalanceData={settleBalanceData} />
+      <h2>History balance of all games:</h2>
+
+      <Balance data={historyData} />
     </div>
   );
 }

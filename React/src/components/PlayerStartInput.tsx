@@ -5,12 +5,14 @@ type Props = {
   playerData: PlayerData;
   setPlayerData: (data: PlayerData) => void;
   playerNames: string[];
+  extraProps: { name?: any; start?: any };
 };
 
 export default function PlayerStartInput({
   playerData,
   setPlayerData,
   playerNames,
+  extraProps,
 }: Props) {
   const handleNameChange = (newValue: string | null) => {
     if (newValue == null) return;
@@ -31,15 +33,14 @@ export default function PlayerStartInput({
   return (
     <>
       <Autocomplete
+        onChange={(e, nv) => handleNameChange(nv as string | null)}
         placeholder="Name"
         variant="soft"
         freeSolo
         value={playerData.name}
         options={playerNames}
-        onChange={(e, nv) => handleNameChange(nv)}
-        sx={{ flex: "0 2 auto" }}
-        size="sm"
         required
+        {...extraProps?.name}
       />
       <Input
         placeholder="Start Balance"
@@ -50,9 +51,8 @@ export default function PlayerStartInput({
           setPlayerData({ ...playerData, start_balance: e.target.value })
         }
         startDecorator={"€"}
-        sx={{ flex: "0 3 auto" }}
-        size="sm"
         required
+        {...extraProps?.start}
       />
     </>
   );

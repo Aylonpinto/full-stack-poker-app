@@ -17,7 +17,6 @@ const TotalBalance = ({
 }: Props) => {
   return (
     <Container maxWidth="md" sx={{ m: "10px auto" }}>
-      <h2>Total Balance:</h2>
       <Balance data={balanceData} totalBalance={totalBalance} />
       <Button
         onClick={handleSettleBalance}

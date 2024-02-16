@@ -4,7 +4,7 @@ import _ from "lodash";
 
 type Props = {
   data: Record<string, number>;
-  totalBalance: number;
+  totalBalance?: number;
 };
 
 export default function Balance({ data, totalBalance }: Props) {
@@ -17,6 +17,16 @@ export default function Balance({ data, totalBalance }: Props) {
       </tr>
     );
   });
+  const foot = totalBalance ? (
+    <tfoot>
+      <tr>
+        <th>Total:</th>
+        <th>{totalBalance}</th>
+      </tr>
+    </tfoot>
+  ) : (
+    <></>
+  );
   return (
     <Sheet>
       <Table
@@ -35,12 +45,7 @@ export default function Balance({ data, totalBalance }: Props) {
           </tr>
         </thead>
         <tbody>{body}</tbody>
-        <tfoot>
-          <tr>
-            <th>Total:</th>
-            <th>{totalBalance}</th>
-          </tr>
-        </tfoot>
+        {foot}
       </Table>
     </Sheet>
   );

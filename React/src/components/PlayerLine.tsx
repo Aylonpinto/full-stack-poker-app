@@ -19,6 +19,10 @@ export default function PlayerLine({
         playerData={playerData}
         setPlayerData={setPlayerData}
         playerNames={playerNames}
+        extraProps={{
+          name: { size: "md", sx: { flex: "0 5 auto" } },
+          start: { size: "md", sx: { flex: "0 6 auto" } },
+        }}
       />
       <Input
         placeholder="End Balance"
@@ -26,10 +30,10 @@ export default function PlayerLine({
         type="number"
         value={playerData.end_balance}
         startDecorator={"€"}
+        sx={{ flex: "0 6 auto" }}
         onChange={(e) =>
           setPlayerData({ ...playerData, end_balance: e.target.value })
         }
-        size="sm"
       />
     </>
   );

@@ -213,23 +213,23 @@ export default function Live() {
       <Typography level="body-md">
         Here you can keep track of a live cash game while you are playing!
       </Typography>
-      <br />
-      <FormControl>
-        <FormLabel>Please fill in the buy-in amout:</FormLabel>
-        <Input
-          placeholder="Buy-in amount"
-          variant="soft"
-          type="number"
-          value={buyin}
-          startDecorator={"€"}
-          onChange={(e) => handleChange(e)}
-        />
-        <FormHelperText>
-          This will be used as a unit to add extra buy-ins to players.
-        </FormHelperText>
-      </FormControl>
-      <br />
       <Stack spacing={3}>
+        <br />
+        <FormControl>
+          <FormLabel>Please fill in the buy-in amout:</FormLabel>
+          <Input
+            placeholder="Buy-in amount"
+            variant="soft"
+            type="number"
+            value={buyin}
+            startDecorator={"€"}
+            onChange={(e) => handleChange(e)}
+          />
+          <FormHelperText>
+            This will be used as a unit to add extra buy-ins to players.
+          </FormHelperText>
+        </FormControl>
+
         <LivePlayers
           playersData={livePlayersData}
           setPlayersData={setLivePlayersData}
@@ -237,34 +237,33 @@ export default function Live() {
           playerNames={playerNames}
           handleClearPlayers={handleClearPlayers}
         />
+        <Typography level="body-md">
+          The total money on the table is: €{totalAmount}
+        </Typography>
+        <ExitedPlayers
+          playersData={livePlayersData.filter((p) => p.end_balance !== "")}
+        />
+        <form onSubmit={handleGameSubmit}>
+          <FormControl>
+            <GameName
+              gameName={gameName}
+              setGameName={setGameName}
+              endDecorator={
+                <Button
+                  type="submit"
+                  variant="soft"
+                  color="success"
+                  startDecorator={<Save />}
+                  onClick={() => {}}
+                  disabled={disabled}
+                >
+                  Save Game
+                </Button>
+              }
+            />
+          </FormControl>
+        </form>
       </Stack>
-      <Typography level="body-md">
-        The total money on the table is: €{totalAmount}
-      </Typography>
-      <ExitedPlayers
-        playersData={livePlayersData.filter((p) => p.end_balance !== "")}
-      />
-      <br />
-      <form onSubmit={handleGameSubmit}>
-        <FormControl>
-          <GameName
-            gameName={gameName}
-            setGameName={setGameName}
-            endDecorator={
-              <Button
-                type="submit"
-                variant="soft"
-                color="success"
-                startDecorator={<Save />}
-                onClick={() => {}}
-                disabled={disabled}
-              >
-                Save Game
-              </Button>
-            }
-          />
-        </FormControl>
-      </form>
     </Container>
   );
 }

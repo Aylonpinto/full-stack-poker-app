@@ -48,6 +48,10 @@ export default function LivePlayerLine({
         setPlayerData={setPlayerData}
         playerData={playerData}
         playerNames={playerNames}
+        extraProps={{
+          name: { size: "sm", sx: { flex: "0 2 auto" } },
+          start: { size: "sm", sx: { flex: "0 3 auto" } },
+        }}
       />
       <Button
         variant="outlined"

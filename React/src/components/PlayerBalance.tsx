@@ -40,7 +40,6 @@ export default function PlayerBalance({
                 variant="soft"
                 color="primary"
                 onClick={() => addPlayer()}
-                size="sm"
               >
                 <AddIcon />
               </IconButton>
