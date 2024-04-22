@@ -5,7 +5,7 @@ import calculations as calc
 import models
 import sqlalchemy as sql
 from database import SessionLocal, engine
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -88,6 +88,10 @@ db_dependency = Annotated[Session, Depends(get_db)]
 models.Base.metadata.create_all(bind=engine)
 
 
+
+@app.get("/")
+def read_root():
+    return Response("Server is running.")
 
 
 @app.post("/games/", response_model=PokerGameModel)
