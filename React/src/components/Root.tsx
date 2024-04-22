@@ -17,7 +17,7 @@ export default function Root() {
     <React.Fragment>
       <CssBaseline enableColorScheme />
       {/* The rest of your application */}
-      <ResponsiveAppBar appName="Live Tracker" />
+      <ResponsiveAppBar appName="Home game" />
       <Outlet />
     </React.Fragment>
   );
