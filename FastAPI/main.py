@@ -13,9 +13,7 @@ from sqlalchemy.orm import Session
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",
-    "http://192.168.1.120:3000",
-    "http://192.168.1.239:3000",
+   " https://full-stack-poker-app.onrender.com"
 ]
 
 app.add_middleware(
