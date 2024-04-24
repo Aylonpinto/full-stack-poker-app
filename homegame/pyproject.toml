@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "homegame"
+version = "0.1.0"
+description = "The api for the BE of homegame poker app"
+authors = ["Aylonpinto <aylonpinto@gmail.com>"]
+packages = [{include = "../homegame"}]
+
+
+[tool.poetry.dependencies]
+python = "3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+]
