@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from db.core import DBPlayedGame, NotFoundError
 from numpy import nbytes
@@ -25,6 +25,9 @@ class PlayedGameUpdate(BaseModel):
     start_balance: Optional[float] = None
     end_balance: Optional[float] = None
     
+def read_db_played_games(skip: int, limit: int, session: Session) -> List[DBPlayedGame]:
+    db_played_games = session.query(DBPlayedGame).offset(skip).limit(limit).all()
+    return db_played_games
 
 def read_db_played_game(played_game_id: int, session: Session) -> DBPlayedGame:
     db_played_game = session.query(DBPlayedGame).filter(DBPlayedGame.id == played_game_id).first()

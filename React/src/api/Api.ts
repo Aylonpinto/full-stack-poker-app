@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: `https://homegame-api.onrender.com`,
+  baseURL: `http://${window.location.hostname}:8000`,
 });
 
 export default api;

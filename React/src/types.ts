@@ -9,12 +9,12 @@ export type PlayersData = PlayerData[];
 export type Callback<T> = (arg: T) => T;
 
 export type PlayerResponse = {
-  player_name: string;
+  name: string;
   balance: number;
   id: number;
 };
 export type GameResponse = {
-  game_name: string;
+  name: string;
   id: number;
 };
 
@@ -25,7 +25,7 @@ export type LivePlayer = {
   end_balance: number;
 };
 
-export type PlayerGame = {
+export type PlayedGame = {
   id: number;
   game_id: number;
   player_id: number;
@@ -35,5 +35,5 @@ export type PlayerGame = {
 
 export type Games = {
   id: number;
-  game_name: string;
+  name: string;
 }[];

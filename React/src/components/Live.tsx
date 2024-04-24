@@ -13,10 +13,12 @@ import Bluebird from "bluebird";
 import _ from "lodash";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import api from "../Api";
+import api from "../api/Api";
+import { deleteLiveData, insertGame } from "../api/ApiUtils";
 import {
   GameResponse,
   LivePlayer,
+  PlayedGame,
   PlayerResponse,
   PlayersData,
 } from "../types";
@@ -84,7 +86,6 @@ export default function Live() {
 
   // calculate money on the table
   useEffect(() => {
-    console.log(livePlayersData);
     const total = _.sum(
       livePlayersData.map(
         (p) => Number(p.start_balance) - Number(p.end_balance),
@@ -100,13 +101,14 @@ export default function Live() {
   }, []);
 
   const fetchLiveData = async () => {
-    const response = await api.get<LivePlayer[]>("/live/");
+    const response = await api.get<LivePlayer[]>("/live_games/");
     const players = (await api.get<PlayerResponse[]>("/players/")).data;
+
     const playersData: PlayersData = [];
 
     _.each(response.data, (live) => {
       const player = {
-        name: players.find((p) => p.id === live.player_id)?.player_name ?? "",
+        name: players.find((p) => p.id === live.player_id)?.name ?? "",
         start_balance: live.start_balance,
         end_balance: live.end_balance ? live.end_balance : "",
       };
@@ -115,7 +117,7 @@ export default function Live() {
     if (playersData.length) {
       setLivePlayersData(playersData);
     }
-    setPlayerNames(players.map((p) => p.player_name));
+    setPlayerNames(players.map((p) => p.name));
   };
 
   const asyncDBSync = async () => {
@@ -128,21 +130,21 @@ export default function Live() {
         start_balance: Number(plData.start_balance),
         end_balance: Number(plData.end_balance),
       };
-      const player = players.find((p) => p.player_name === plData.name);
+      const player = players.find((p) => p.name === plData.name);
 
       if (player) {
         post.player_id = player.id;
       } else {
         const newPlayer = (
-          await api.post("/players/", {
-            player_name: plData.name,
+          await api.post<PlayerResponse>("/players/", {
+            name: plData.name,
             balance: 0,
           })
         ).data;
         post.player_id = newPlayer.id;
       }
 
-      await api.post("/live/", post);
+      await api.post<LivePlayer>("/live_games/", post);
     });
   };
 
@@ -158,17 +160,15 @@ export default function Live() {
     for (const currentPlayer of livePlayersData) {
       const players = (await api.get<PlayerResponse[]>("/players/")).data;
       let playerId = undefined;
-      const dbPlayer = players.find(
-        (p) => p.player_name === currentPlayer?.name,
-      );
+      const dbPlayer = players.find((p) => p.name === currentPlayer?.name);
 
       if (!dbPlayer) {
         await api.post("/players/", {
-          player_name: currentPlayer.name,
+          name: currentPlayer.name,
           balance: 0,
         });
         playerId = (await api.get<PlayerResponse[]>("/players/")).data.find(
-          (p) => p.player_name === currentPlayer.name,
+          (p) => p.name === currentPlayer.name,
         )?.id;
       } else {
         playerId = dbPlayer.id;
@@ -182,22 +182,22 @@ export default function Live() {
       const start = Number(currentPlayer.start_balance);
       const end = Number(currentPlayer.end_balance);
 
-      const playerGameData = {
+      const playedGameData = {
         game_id: gameId,
         player_id: playerId ?? 0,
         start_balance: start,
         end_balance: end,
       };
-      await api.post("/player_games/", playerGameData);
+      await api.post<PlayedGame>("/played_games/", playedGameData);
     }
 
-    await api.post("/games/", { game_name: gameName });
-    await api.delete("/live");
+    await insertGame(api, gameName);
+    await deleteLiveData(api);
     navigate("/home");
   };
 
   const handleClearPlayers = async () => {
-    await api.delete("/live");
+    await deleteLiveData(api);
     setLivePlayersData([
       {
         name: "",

@@ -1,5 +1,5 @@
 
-from typing import Optional
+from typing import List, Optional
 
 from db.core import DBGame, NotFoundError
 from pydantic import BaseModel
@@ -15,6 +15,10 @@ class GameCreate(BaseModel):
 
 class GameUpdate(BaseModel):
     name: Optional[str] = None
+
+def read_db_games(skip: int, limit: int, session: Session) -> List[DBGame]:
+    db_games = session.query(DBGame).offset(skip).limit(limit).all()
+    return db_games
 
 def read_db_game(game_id: int, session: Session) -> DBGame:
     db_game = session.query(DBGame).filter(DBGame.id == game_id).first()

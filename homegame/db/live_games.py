@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from db.core import DBLiveGame, NotFoundError
 from pydantic import BaseModel
@@ -20,6 +20,11 @@ class LiveGameUpdate(BaseModel):
     player_id: Optional[int] = None
     start_balance: Optional[float] = None
     end_balance: Optional[float] = None
+
+
+def read_db_live_games(skip: int, limit: int, session: Session) -> List[DBLiveGame]:
+    db_live_games = session.query(DBLiveGame).offset(skip).limit(limit).all()
+    return db_live_games
 
 def read_db_live_game(live_game_id: int, session: Session) -> DBLiveGame:
     db_live_game = session.query(DBLiveGame).filter(DBLiveGame.id == live_game_id).first()

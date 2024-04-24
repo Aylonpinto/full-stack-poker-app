@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import List, Optional
 
+import calculations as calc
 from db.core import DBPlayer, NotFoundError
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -17,6 +18,10 @@ class PlayerCreate(BaseModel):
 class PlayerUpdate(BaseModel):
     balance: Optional[float] = None
     name: Optional[str] = None
+
+def read_db_players(skip: int, limit: int, session: Session) -> List[DBPlayer]:
+    db_players = session.query(DBPlayer).offset(skip).limit(limit).all()
+    return db_players
 
 def read_db_player(player_id: int, session: Session) -> DBPlayer:
     db_player = session.query(DBPlayer).filter(DBPlayer.id == player_id).first()
@@ -50,3 +55,13 @@ def delete_db_player(player_id: int, session: Session) -> DBPlayer:
     session.commit()
 
     return db_player
+
+def get_transactions( db: Session) -> List[str]:
+    players = read_db_players(0, 100, db)
+    if not players:
+        return []
+    balance = {}
+    for player in players:
+        balance[player.name] = player.balance
+    transactions = calc.settle_balance(balance)
+    return transactions
