@@ -1,6 +1,4 @@
 # main.py
-
-import models as models
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers.games import router as games_router
