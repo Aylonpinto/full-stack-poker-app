@@ -1,21 +1,31 @@
-# Getting Started with Create React App
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
 ## Start the appp
 
-In the React directory, you can run:
+This web-app is live on https://homegame.onrender.com however, if you want to run it locally here is how you can do it:
 
-### `npm start`
+- Clone the repo locally
+- Navigate to the 'React' directory. Make sure to have node v20.10.0 and npm 10.2.3 installed. Run:
 
-Then on another terminal navigate to the FastAPI directory and run:
+```console
+npm install && npm start
+```
 
-### `uvicorn main:app --reload --host 0.0.0.0 --port 8000`
+- Open a second terminal, make sure to have python 3.11.0, pip 23.0.1 and conda or some other venv manager installed.
+- Create and activate a virtual environment with:
 
-This runs the app in the development mode.\
+```console
+conda create -n homegame && conda activate homegame
+```
+
+- Navigate to the 'homegame' directory and run:
+
+```console
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
 Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-The page will reload when you make changes.\
+The page will reload when you make changes.
 You may also see any lint errors in the console.
 
 ### `npm test`

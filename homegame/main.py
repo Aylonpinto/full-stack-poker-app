@@ -1,4 +1,6 @@
 # main.py
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers.games import router as games_router
@@ -11,6 +13,7 @@ from slowapi.errors import RateLimitExceeded
 
 app = FastAPI()  # FastAPI(lifespan=lifespan)
 
+os.environ.get('PYTHON_ENV') == 'production'
 
 
 app.include_router(games_router)
@@ -29,7 +32,8 @@ def read_root():
 
 origins = [
    "https://homegame.onrender.com"
-]
+] if os.environ.get('PYTHON_ENV') == 'production' else ["*"]
+
 
 app.add_middleware(
     CORSMiddleware,
