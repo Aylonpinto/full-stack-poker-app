@@ -1,7 +1,7 @@
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import api from "../api/Api";
-import { insertGame } from "../api/ApiUtils";
+import { getSettleBalance, insertGame } from "../api/ApiUtils";
 import {
   GameResponse,
   PlayedGame,
@@ -37,28 +37,28 @@ function Home() {
 
   const fetchBalanceData = async () => {
     const response = await api.get<PlayerResponse[]>("/players/");
-    const data: Record<string, number> = {};
+    const balance: Record<string, number> = {};
+    const sortedData = _.orderBy(response.data, (pl) => pl.balance, "desc");
     let total = 0;
-    for (const player of response.data) {
-      data[player.name] = player.balance;
+    for (const player of sortedData) {
+      balance[player.name] = player.balance;
       total += player.balance;
     }
     setTotalBalance(total);
-    setBalanceData(data);
+    setBalanceData(balance);
   };
 
   const fetchHistoryData = async () => {
     const playerGames = (await api.get<PlayedGame[]>("/played_games/")).data;
     const players = (await api.get<PlayerResponse[]>("/players/")).data;
     const data: Record<string, number> = {};
-    let total = 0;
+
     for (const pg of playerGames) {
       const playerName = _.find(players, (p) => p.id === pg.player_id)?.name;
       if (!playerName) continue;
       const balance = pg.end_balance - pg.start_balance;
       data[playerName] = data[playerName] | 0;
       data[playerName] += balance;
-      total += balance;
     }
     const histItems = Object.keys(data).map(
       (player) => [player, data[player]] as [string, number],
@@ -118,8 +118,8 @@ function Home() {
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault();
-    const transactions = await api.get("/players/settle_balance/");
-    setSettleBalanceData(transactions.data);
+    const transactions = await getSettleBalance(api);
+    setSettleBalanceData(transactions);
     clearPlayers();
   };
 

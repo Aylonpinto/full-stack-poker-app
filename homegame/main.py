@@ -13,9 +13,6 @@ from slowapi.errors import RateLimitExceeded
 
 app = FastAPI()  # FastAPI(lifespan=lifespan)
 
-os.environ.get('PYTHON_ENV') == 'production'
-
-
 app.include_router(games_router)
 app.include_router(players_router)
 app.include_router(live_games_router)

@@ -2,8 +2,8 @@ from typing import List
 
 from db.core import NotFoundError, get_db
 from db.players import (Player, PlayerCreate, PlayerUpdate, create_db_player,
-                        delete_db_player, get_transactions, read_db_player,
-                        read_db_players, update_db_player)
+                        delete_db_player, read_db_player, read_db_players,
+                        update_db_player)
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.params import Depends
 from routers.limiter import limiter
@@ -64,14 +64,3 @@ def delete_player(request: Request, player_id: int, db: Session = Depends(get_db
     except NotFoundError as e:
         raise HTTPException(status_code=404) from e
     return Player(**db_player.__dict__)
-
-@router.get("/settle_balance/")
-@limiter.limit("1/second")
-def settle_balance(
-    request: Request, db: Session = Depends(get_db)
-) -> List[str]:
-    try:
-        transactions = get_transactions(db)
-    except NotFoundError as e:
-        raise HTTPException(status_code=404) from e
-    return transactions

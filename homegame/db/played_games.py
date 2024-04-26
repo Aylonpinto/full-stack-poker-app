@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 from db.core import DBPlayedGame, NotFoundError
-from numpy import nbytes
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
