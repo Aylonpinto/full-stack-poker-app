@@ -1,7 +1,8 @@
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import api from "../api/Api";
-import { getSettleBalance, insertGame } from "../api/ApiUtils";
+import { insertGame } from "../api/ApiUtils";
+import { getTransactions } from "../utils";
 import {
   GameResponse,
   PlayedGame,
@@ -118,7 +119,7 @@ function Home() {
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault();
-    const transactions = await getSettleBalance(api);
+    const transactions = getTransactions(balanceData);
     setSettleBalanceData(transactions);
     clearPlayers();
   };

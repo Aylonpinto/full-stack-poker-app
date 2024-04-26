@@ -1,5 +1,4 @@
 import { AxiosInstance } from "axios";
-import _ from "lodash";
 import { GameResponse, LivePlayer, PlayedGame, PlayerResponse } from "../types";
 
 export const deleteLiveData = async (api: AxiosInstance) => {
@@ -25,51 +24,4 @@ export const insertGame = async (api: AxiosInstance, gameName: string) => {
         player.balance + played_game.end_balance - played_game.start_balance,
     });
   }
-};
-
-export const getSettleBalance = async (api: AxiosInstance) => {
-  const response = await api.get<PlayerResponse[]>("/players/");
-  const data = response.data;
-
-  let sortedBalance = _.sortBy(data, (player) => player.balance);
-  let transactions: string[] = [];
-  let player = sortedBalance[0];
-  let total = _.sumBy(data, (player) => player.balance);
-
-  while (player.balance < 0) {
-    let otherPlayer = sortedBalance[sortedBalance.length - 1];
-
-    if (-player.balance === otherPlayer.balance) {
-      let amount = "€" + Math.abs(-player.balance).toFixed(2);
-      transactions.push(`${player.name} pays ${amount} to ${otherPlayer.name}`);
-      sortedBalance = _.slice(sortedBalance, 1, -1);
-    } else if (-player.balance < otherPlayer.balance) {
-      let amount = "€" + Math.abs(-player.balance).toFixed(2);
-      transactions.push(`${player.name} pays ${amount} to ${otherPlayer.name}`);
-      sortedBalance = _.slice(sortedBalance, 1);
-      sortedBalance[sortedBalance.length - 1] = {
-        ...otherPlayer,
-        balance: otherPlayer.balance + player.balance,
-      };
-    } else {
-      let amount = "€" + Math.abs(otherPlayer.balance).toFixed(2);
-      transactions.push(`${player.name} pays ${amount} to ${otherPlayer.name}`);
-      sortedBalance = _.initial(sortedBalance);
-      player = {
-        ...player,
-        balance: player.balance + otherPlayer.balance,
-      };
-    }
-
-    if (sortedBalance.length <= 1) {
-      break;
-    }
-
-    player = sortedBalance[0];
-  }
-
-  let amount = "€" + Math.abs(total).toFixed(2);
-  transactions.push(`Amount not accounted for: ${amount}`);
-
-  return transactions;
 };
