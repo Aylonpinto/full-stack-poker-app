@@ -1,4 +1,4 @@
-## Start the appp
+## Start the app
 
 This web-app is live on https://homegame.onrender.com however, if you want to run it locally here is how you can do it:
 
