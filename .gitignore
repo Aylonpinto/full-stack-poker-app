@@ -9,7 +9,7 @@ node_modules/
 # production
 **/build
 
-## DB
+# DB
 **/poker.db
 
 # misc
