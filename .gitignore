@@ -9,6 +9,9 @@ node_modules/
 # production
 **/build
 
+#DB
+**/poker.db
+
 # misc
 .DS_Store
 .env.local
