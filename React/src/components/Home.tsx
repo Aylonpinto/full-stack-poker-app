@@ -1,9 +1,11 @@
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
-import api from "./../Api";
+import api from "../api/Api";
+import { insertGame } from "../api/ApiUtils";
+import { getTransactions } from "../utils";
 import {
   GameResponse,
-  PlayerGame,
+  PlayedGame,
   PlayerResponse,
   PlayersData,
 } from "./../types";
@@ -36,29 +38,28 @@ function Home() {
 
   const fetchBalanceData = async () => {
     const response = await api.get<PlayerResponse[]>("/players/");
-    const data: Record<string, number> = {};
+    const balance: Record<string, number> = {};
+    const sortedData = _.orderBy(response.data, (pl) => pl.balance, "desc");
     let total = 0;
-    for (const player of response.data) {
-      data[player.player_name] = player.balance;
+    for (const player of sortedData) {
+      balance[player.name] = player.balance;
       total += player.balance;
     }
     setTotalBalance(total);
-    setBalanceData(data);
+    setBalanceData(balance);
   };
 
   const fetchHistoryData = async () => {
-    const playerGames = (await api.get<PlayerGame[]>("/player_games/")).data;
+    const playerGames = (await api.get<PlayedGame[]>("/played_games/")).data;
     const players = (await api.get<PlayerResponse[]>("/players/")).data;
     const data: Record<string, number> = {};
-    let total = 0;
+
     for (const pg of playerGames) {
-      const playerName = _.find(players, (p) => p.id === pg.player_id)
-        ?.player_name;
+      const playerName = _.find(players, (p) => p.id === pg.player_id)?.name;
       if (!playerName) continue;
       const balance = pg.end_balance - pg.start_balance;
       data[playerName] = data[playerName] | 0;
       data[playerName] += balance;
-      total += balance;
     }
     const histItems = Object.keys(data).map(
       (player) => [player, data[player]] as [string, number],
@@ -77,25 +78,35 @@ function Home() {
     event.preventDefault();
     const gameId = (games?.length ? _.maxBy(games, (g) => g.id)!.id : 0) + 1;
     for (const player of playersData) {
-      if (typeof balanceData[player.name] === "undefined") {
-        await api.post("/players/", { player_name: player.name, balance: 0 });
-      }
+      let playerId = 0;
 
       // Fetch players and wait for the response before proceeding
-      const playersResponse = await api.get("/players/");
-      const playerId = _.find(playersResponse.data, (p) => {
-        return p.player_name === player.name;
-      })?.id;
+      const playersResponse = _.find(
+        (await api.get<PlayerResponse[]>("/players/")).data,
+        (p) => p.name === player.name,
+      );
 
-      const playerGameData = {
+      if (!playersResponse) {
+        const newPlayer = (
+          await api.post<PlayerResponse>("/players/", {
+            name: player.name,
+            balance: 0,
+          })
+        ).data;
+        playerId = newPlayer.id;
+      } else {
+        playerId = playersResponse.id;
+      }
+
+      const playedGameData = {
         game_id: gameId,
-        player_id: playerId ?? 0,
+        player_id: playerId,
         start_balance: player.start_balance,
         end_balance: Number(player.end_balance),
       };
-      await api.post("/player_games/", playerGameData);
+      await api.post<PlayedGame>("/played_games/", playedGameData);
     }
-    await api.post("/games/", { game_name: gameName });
+    await insertGame(api, gameName);
 
     // Use the updatedGames array
     fetchGames();
@@ -108,8 +119,8 @@ function Home() {
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault();
-    const transactions = await api.get("/settle_balance/");
-    setSettleBalanceData(transactions.data);
+    const transactions = getTransactions(balanceData);
+    setSettleBalanceData(transactions);
     clearPlayers();
   };
 
@@ -118,7 +129,7 @@ function Home() {
     const ids = response.data.map((p) => p.id);
 
     for (const id of ids) {
-      await api.post(`/reset_player/${id}`);
+      await api.put(`/players/${id}`, { balance: 0 });
     }
     fetchBalanceData();
   };

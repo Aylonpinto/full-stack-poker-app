@@ -12,7 +12,7 @@ export default function SumBalance({ playersData }: Props) {
   const totalOut = _.sumBy(playersData, (p) => Number(p.end_balance));
 
   const totalZero = totalOut === totalIn;
-  const text = `The sum of in and out is ${totalOut - totalIn}`;
+  const text = `The sum of in and out is ${_.round(totalOut - totalIn, 2)}`;
 
   const jsx = totalZero ? (
     <Typography

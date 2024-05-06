@@ -14,8 +14,12 @@ export default function PlayerStartInput({
   playerNames,
   extraProps,
 }: Props) {
-  const handleNameChange = (newValue: string | null) => {
+  const handleNameChange = (
+    newValue: string | null,
+    event: React.SyntheticEvent<Element, Event>,
+  ) => {
     if (newValue == null) return;
+
     let updatedName = newValue;
     while (updatedName[0] === " " || updatedName.slice(-1) === " ") {
       updatedName =
@@ -33,7 +37,7 @@ export default function PlayerStartInput({
   return (
     <>
       <Autocomplete
-        onChange={(e, nv) => handleNameChange(nv as string | null)}
+        onInputChange={(e, nv) => handleNameChange(nv as string | null, e)}
         placeholder="Name"
         variant="soft"
         freeSolo
