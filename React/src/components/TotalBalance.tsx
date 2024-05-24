@@ -7,17 +7,12 @@ type Props = {
   handleSettleBalance: (
     event: React.MouseEvent<HTMLButtonElement>,
   ) => Promise<void>;
-  totalBalance: number;
 };
 
-const TotalBalance = ({
-  balanceData,
-  handleSettleBalance,
-  totalBalance,
-}: Props) => {
+const TotalBalance = ({ balanceData, handleSettleBalance }: Props) => {
   return (
     <Container maxWidth="md" sx={{ m: "10px auto" }}>
-      <Balance data={balanceData} totalBalance={totalBalance} />
+      <Balance data={balanceData} />
       <Button
         onClick={handleSettleBalance}
         variant="soft"

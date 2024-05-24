@@ -21,7 +21,6 @@ function Home() {
     { name: "", start_balance: "", end_balance: "" },
   ]);
   const [balanceData, setBalanceData] = useState<Record<string, number>>({});
-  const [totalBalance, setTotalBalance] = useState(0);
   const [settleBalanceData, setSettleBalanceData] = useState<string[]>([]);
   const [historyData, setHistoryData] = useState<Record<string, number>>({});
 
@@ -45,7 +44,6 @@ function Home() {
       balance[player.name] = player.balance;
       total += player.balance;
     }
-    setTotalBalance(total);
     setBalanceData(balance);
   };
 
@@ -57,8 +55,10 @@ function Home() {
     for (const pg of playerGames) {
       const playerName = _.find(players, (p) => p.id === pg.player_id)?.name;
       if (!playerName) continue;
-      const balance = pg.end_balance - pg.start_balance;
-      data[playerName] = data[playerName] | 0;
+      const balance = _.round(pg.end_balance - pg.start_balance, 2);
+      if (!(playerName in data)) {
+        data[playerName] = 0;
+      }
       data[playerName] += balance;
     }
     const histItems = Object.keys(data).map(
@@ -132,6 +132,7 @@ function Home() {
       await api.put(`/players/${id}`, { balance: 0 });
     }
     fetchBalanceData();
+    fetchHistoryData();
   };
 
   return (
@@ -140,7 +141,6 @@ function Home() {
 
       <TotalBalance
         balanceData={balanceData}
-        totalBalance={totalBalance}
         handleSettleBalance={handleSettleBalance}
       />
       <GameForm

@@ -1,19 +1,22 @@
 import Sheet from "@mui/joy/Sheet";
 import Table from "@mui/joy/Table";
 import _ from "lodash";
+import { numberToStringMoney } from "../utils";
 
 type Props = {
   data: Record<string, number>;
-  totalBalance?: number;
 };
 
-export default function Balance({ data, totalBalance }: Props) {
+export default function Balance({ data }: Props) {
+  const totalBalance = _.round(_.sum(_.map(data, (b) => b)), 1);
   const body = _.map(data, (balance, name) => {
+    const stringBalance = numberToStringMoney(balance);
+
     if (!balance) return;
     return (
       <tr>
         <td>{name}</td>
-        <td>{balance < 0 ? `-€${-balance}` : `€${balance}`}</td>
+        <td>{stringBalance}</td>
       </tr>
     );
   });
