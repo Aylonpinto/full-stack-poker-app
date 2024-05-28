@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import ForeignKey, create_engine
@@ -55,6 +56,17 @@ class DBPlayedGame(Base):
     start_balance: Mapped[float]
     end_balance: Mapped[float]
 
+    def __repr__(self):
+        return str(self.__dict__)
+
+class DBSession(Base):
+    __tablename__ = "sessions"
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    player_id: Mapped[int] = mapped_column(ForeignKey("players.id"))
+    session_name: Mapped[Optional[str]] = mapped_column(nullable=True)
+    balance: Mapped[float]
+    closed_time: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    
     def __repr__(self):
         return str(self.__dict__)
 
