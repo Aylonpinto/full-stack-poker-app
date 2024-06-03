@@ -74,7 +74,7 @@ def create_router(DBType: Type):
         return items
 
     @router.post("/")
-    @limiter.limit("10/second")
+    @limiter.limit("1000/second")
     def create(
         request: Request, create_item: CreateType, db: Session = Depends(get_db)
     ) -> BaseType:
@@ -85,7 +85,7 @@ def create_router(DBType: Type):
         return BaseType(**db_item.__dict__)
 
     @router.get("/{id}")
-    @limiter.limit("10/second")
+    @limiter.limit("1000/second")
     def read_one(request: Request, id: int, db: Session = Depends(get_db)) -> BaseType:
         db_item = db.query(DBType).filter(DBType.id == id).first()
         if db_item is None:
