@@ -62,7 +62,7 @@ def create_router(DBType: Type):
     CreateType, UpdateType, BaseType = create_classes(DBType)
 
     @router.get("/")
-    @limiter.limit("30/second")
+    @limiter.limit("1000/second")
     def read(request: Request, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)) -> List[BaseType]:
         try:
             db_items = db.query(DBType).offset(skip).limit(limit).all()
@@ -93,7 +93,7 @@ def create_router(DBType: Type):
         return BaseType(**db_item.__dict__)
 
     @router.put("/{id}")
-    @limiter.limit("10/second")
+    @limiter.limit("1000/second")
     def update(
         request: Request, id: int, item_update: UpdateType, db: Session = Depends(get_db)
     ) -> BaseType:
@@ -107,7 +107,7 @@ def create_router(DBType: Type):
         return BaseType(**db_item.__dict__)
 
     @router.delete("/{id}")
-    @limiter.limit("10/second")
+    @limiter.limit("1000/second")
     def delete(request: Request, id: int, db: Session = Depends(get_db)) -> BaseType:
         db_item = db.query(DBType).filter(DBType.id == id).first()
         if db_item is None:

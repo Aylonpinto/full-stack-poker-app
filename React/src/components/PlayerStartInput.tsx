@@ -31,7 +31,7 @@ export default function PlayerStartInput({
       updatedName = updatedName[0].toUpperCase() + updatedName.slice(1);
     }
 
-    setPlayerData({ ...playerData, name: updatedName });
+    setPlayerData({ ...playerData, player_name: updatedName });
   };
 
   return (
@@ -41,7 +41,7 @@ export default function PlayerStartInput({
         placeholder="Name"
         variant="soft"
         freeSolo
-        value={playerData.name}
+        value={playerData.player_name}
         options={playerNames}
         required
         {...extraProps?.name}

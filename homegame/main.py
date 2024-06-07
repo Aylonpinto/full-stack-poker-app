@@ -38,12 +38,16 @@ async def insert_sessions():
                 game_id = item['game_id']
                 game_response = client.get(f'/games/{game_id}')
                 game_name = game_response.json()['name']
+                player_id = item['player_id']
+                player_response = client.get(f'/players/{player_id}')
+                player_name = player_response.json()['name']
                 balance = item['end_balance'] - item['start_balance']
                 session = {
                     "balance": balance,
                     "session_name": game_name,
-                    "player_id": item['player_id'],
-                    "closed_time": datetime.now().isoformat()
+                    "player_name": player_name,
+                    "closed_time": datetime.now().isoformat(),
+                    "settled": True
                 }
                 client.post('/sessions/', json=session)
 

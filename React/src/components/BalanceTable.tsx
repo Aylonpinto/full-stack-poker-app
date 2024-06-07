@@ -1,21 +1,22 @@
 import Sheet from "@mui/joy/Sheet";
 import Table from "@mui/joy/Table";
 import _ from "lodash";
+import { Balance } from "../types";
 import { numberToStringMoney } from "../utils";
 
 type Props = {
-  data: Record<string, number>;
+  data: Balance;
 };
 
-export default function Balance({ data }: Props) {
-  const totalBalance = _.round(_.sum(_.map(data, (b) => b)), 1);
-  const body = _.map(data, (balance, name) => {
-    const stringBalance = numberToStringMoney(balance);
+export default function BalanceTable({ data }: Props) {
+  const totalBalance = _.round(_.sum(_.map(data, (b) => b.balance)), 1);
+  const body = _.map(data, (el) => {
+    const stringBalance = numberToStringMoney(el.balance);
 
-    if (!balance) return;
+    if (!el.balance) return;
     return (
-      <tr>
-        <td>{name}</td>
+      <tr style={{ color: el.balance >= 0 ? "#198754" : "#dc3545" }}>
+        <td>{el.player_name}</td>
         <td>{stringBalance}</td>
       </tr>
     );
@@ -33,13 +34,15 @@ export default function Balance({ data }: Props) {
   return (
     <Sheet>
       <Table
+        color="success"
+        variant="plain"
         borderAxis="xBetween"
-        color="neutral"
+        // color="neutral"
         size="md"
         stickyFooter
         stickyHeader
         stripe="odd"
-        variant="soft"
+        // variant="soft"
       >
         <thead>
           <tr>

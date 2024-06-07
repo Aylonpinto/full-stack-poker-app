@@ -1,118 +1,61 @@
-import _ from "lodash";
+import { Container } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import api from "../api/Api";
-import { insertGame } from "../api/ApiUtils";
-import { getTransactions } from "../utils";
-import {
-  GameResponse,
-  PlayedGame,
-  PlayerResponse,
-  PlayersData,
-} from "./../types";
-import Balance from "./Balance";
+import { getOpenBalance } from "../api/ApiUtils";
+import { balanceFromSessions, getTransactions } from "../utils";
+import { Balance, PlayersData, SessionResponse } from "./../types";
+import BalanceTable from "./BalanceTable";
 import GameForm from "./GameForm";
 import SettleBalanceModal from "./SettleBalanceModal";
 import TotalBalance from "./TotalBalance";
 
 function Home() {
-  const [games, setGames] = useState<GameResponse[]>([]);
   const [gameName, setGameName] = useState("");
-  const [playersData, setPlayersData] = useState<PlayersData>([
-    { name: "", start_balance: "", end_balance: "" },
-  ]);
-  const [balanceData, setBalanceData] = useState<Record<string, number>>({});
+  const [playersData, setPlayersData] = useState<PlayersData>([]);
+  const [balanceData, setBalanceData] = useState<Balance>([]);
   const [settleBalanceData, setSettleBalanceData] = useState<string[]>([]);
-  const [historyData, setHistoryData] = useState<Record<string, number>>({});
+  const [historyData, setHistoryData] = useState<Balance>([]);
 
   useEffect(() => {
-    fetchGames();
     fetchBalanceData();
     fetchHistoryData();
   }, []);
 
-  const fetchGames = async () => {
-    const response = await api.get<GameResponse[]>("/games/");
-    setGames(response.data ?? []);
-  };
-
   const fetchBalanceData = async () => {
-    const response = await api.get<PlayerResponse[]>("/players/");
-    const balance: Record<string, number> = {};
-    const sortedData = _.orderBy(response.data, (pl) => pl.balance, "desc");
-    let total = 0;
-    for (const player of sortedData) {
-      balance[player.name] = player.balance;
-      total += player.balance;
-    }
-    setBalanceData(balance);
+    setBalanceData(await getOpenBalance(api));
   };
 
   const fetchHistoryData = async () => {
-    const playerGames = (await api.get<PlayedGame[]>("/played_games/")).data;
-    const players = (await api.get<PlayerResponse[]>("/players/")).data;
-    const data: Record<string, number> = {};
+    const sessions = (await api.get<SessionResponse[]>("/sessions/")).data;
+    const data = balanceFromSessions(sessions);
 
-    for (const pg of playerGames) {
-      const playerName = _.find(players, (p) => p.id === pg.player_id)?.name;
-      if (!playerName) continue;
-      const balance = _.round(pg.end_balance - pg.start_balance, 2);
-      if (!(playerName in data)) {
-        data[playerName] = 0;
-      }
-      data[playerName] += balance;
-    }
-    const histItems = Object.keys(data).map(
-      (player) => [player, data[player]] as [string, number],
-    );
-    histItems.sort((a, b) => b[1] - a[1]);
-
-    const sortAndRounded: Record<string, number> = {};
-    _.each(histItems, (item) => {
-      sortAndRounded[item[0]] = _.round(item[1], 2);
-    });
-
-    setHistoryData(sortAndRounded);
+    setHistoryData(data);
   };
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const gameId = (games?.length ? _.maxBy(games, (g) => g.id)!.id : 0) + 1;
     for (const player of playersData) {
-      let playerId = 0;
-
-      // Fetch players and wait for the response before proceeding
-      const playersResponse = _.find(
-        (await api.get<PlayerResponse[]>("/players/")).data,
-        (p) => p.name === player.name,
-      );
-
-      if (!playersResponse) {
-        const newPlayer = (
-          await api.post<PlayerResponse>("/players/", {
-            name: player.name,
-            balance: 0,
-          })
-        ).data;
-        playerId = newPlayer.id;
-      } else {
-        playerId = playersResponse.id;
-      }
-
-      const playedGameData = {
-        game_id: gameId,
-        player_id: playerId,
-        start_balance: player.start_balance,
-        end_balance: Number(player.end_balance),
+      const sessionData = {
+        session_name: gameName,
+        player_name: player.player_name,
+        balance: Number(player.end_balance) - Number(player.start_balance),
+        closed_time: new Date(),
+        settled: 0,
       };
-      await api.post<PlayedGame>("/played_games/", playedGameData);
+      await api.post<Omit<SessionResponse, "id">>("/sessions/", sessionData);
     }
-    await insertGame(api, gameName);
 
-    // Use the updatedGames array
-    fetchGames();
     fetchBalanceData();
-    setGameName("");
-    setPlayersData([{ name: "", start_balance: "", end_balance: "" }]);
+    setPlayersData([
+      {
+        player_name: "",
+        start_balance: "",
+        end_balance: "",
+        session_id: 0,
+        closed_time: null,
+        session_name: "",
+      },
+    ]);
   };
 
   const handleSettleBalance = async (
@@ -121,15 +64,15 @@ function Home() {
     event.preventDefault();
     const transactions = getTransactions(balanceData);
     setSettleBalanceData(transactions);
-    clearPlayers();
+    markAsSettled();
   };
 
-  const clearPlayers = async () => {
-    const response = await api.get<PlayerResponse[]>("/players/");
-    const ids = response.data.map((p) => p.id);
-
-    for (const id of ids) {
-      await api.put(`/players/${id}`, { balance: 0 });
+  const markAsSettled = async () => {
+    const response = await api.get<SessionResponse[]>("/sessions/");
+    const data = response.data;
+    const notSettled = data.filter((s) => !s.settled).map((s) => s.id);
+    for (const id of notSettled) {
+      await api.put(`/sessions/${id}`, { settled: 1 });
     }
     fetchBalanceData();
     fetchHistoryData();
@@ -149,14 +92,15 @@ function Home() {
         playersData={playersData}
         setPlayersData={setPlayersData}
         handleSubmit={handleFormSubmit}
-        playerNames={Object.keys(balanceData)}
+        playerNames={historyData.map((p) => p.player_name)}
       />
       <br />
       <br />
       <SettleBalanceModal settleBalanceData={settleBalanceData} />
       <h2>History balance of all games:</h2>
-
-      <Balance data={historyData} />
+      <Container maxWidth="md" sx={{ m: "10px auto" }}>
+        <BalanceTable data={historyData} />
+      </Container>
     </div>
   );
 }
