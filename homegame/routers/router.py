@@ -63,7 +63,7 @@ def create_router(DBType: Type):
 
     @router.get("/")
     @limiter.limit("1000/second")
-    def read(request: Request, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)) -> List[BaseType]:
+    def read(request: Request, skip: int = 0, limit: int = 100, db: Session = Depends(get_psql_db)) -> List[BaseType]:
         try:
             db_items = db.query(DBType).offset(skip).limit(limit).all()
         except NotFoundError as e:
@@ -76,7 +76,7 @@ def create_router(DBType: Type):
     @router.post("/")
     @limiter.limit("1000/second")
     def create(
-        request: Request, create_item: CreateType, db: Session = Depends(get_db)
+        request: Request, create_item: CreateType, db: Session = Depends(get_psql_db)
     ) -> BaseType:
         db_item = DBType(**create_item.model_dump(exclude_none=True))
         db.add(db_item)
@@ -86,7 +86,7 @@ def create_router(DBType: Type):
 
     @router.get("/{id}")
     @limiter.limit("1000/second")
-    def read_one(request: Request, id: int, db: Session = Depends(get_db)) -> BaseType:
+    def read_one(request: Request, id: int, db: Session = Depends(get_psql_db)) -> BaseType:
         db_item = db.query(DBType).filter(DBType.id == id).first()
         if db_item is None:
             raise HTTPException(status_code=404, detail={'message': f"{item} with id {id} not found."})
@@ -95,7 +95,7 @@ def create_router(DBType: Type):
     @router.put("/{id}")
     @limiter.limit("1000/second")
     def update(
-        request: Request, id: int, item_update: UpdateType, db: Session = Depends(get_db)
+        request: Request, id: int, item_update: UpdateType, db: Session = Depends(get_psql_db)
     ) -> BaseType:
         db_item = db.query(DBType).filter(DBType.id == id).first()
         if db_item is None:
@@ -108,7 +108,7 @@ def create_router(DBType: Type):
 
     @router.delete("/{id}")
     @limiter.limit("1000/second")
-    def delete(request: Request, id: int, db: Session = Depends(get_db)) -> BaseType:
+    def delete(request: Request, id: int, db: Session = Depends(get_psql_db)) -> BaseType:
         db_item = db.query(DBType).filter(DBType.id == id).first()
         if db_item is None:
             raise HTTPException(status_code=404, detail={'message': f"{item} with id {id} not found."})
