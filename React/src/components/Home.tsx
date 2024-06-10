@@ -26,7 +26,9 @@ function Home() {
   };
 
   const fetchHistoryData = async () => {
-    const sessions = (await api.get<SessionResponse[]>("/sessions/")).data;
+    const sessions = (
+      await api.get<SessionResponse[]>("/sessions/")
+    ).data.filter((s) => s.session_name);
     const data = balanceFromSessions(sessions);
 
     setHistoryData(data);
@@ -80,8 +82,6 @@ function Home() {
 
   return (
     <div className="App">
-      <h2>Open balance:</h2>
-
       <TotalBalance
         balanceData={balanceData}
         handleSettleBalance={handleSettleBalance}
@@ -99,7 +99,7 @@ function Home() {
       <SettleBalanceModal settleBalanceData={settleBalanceData} />
       <h2>History balance of all games:</h2>
       <Container maxWidth="md" sx={{ m: "10px auto" }}>
-        <BalanceTable data={historyData} />
+        <BalanceTable data={historyData} showZero={true} />
       </Container>
     </div>
   );

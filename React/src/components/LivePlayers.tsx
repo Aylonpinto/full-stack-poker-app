@@ -28,7 +28,7 @@ export default function LivePlayers({
 }: Props) {
   useEffect(() => {
     for (const player of playersData) {
-      if (player.start_balance === "") {
+      if (Number(player.start_balance) < Number(buyin) && !player.closed_time) {
         const index = _.indexOf(playersData, player);
 
         setPlayersData((prev: PlayersData) => {

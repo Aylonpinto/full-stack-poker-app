@@ -13,7 +13,8 @@ type Props = {
 const TotalBalance = ({ balanceData, handleSettleBalance }: Props) => {
   return (
     <Container maxWidth="md" sx={{ m: "10px auto" }}>
-      <BalanceTable data={balanceData} />
+      <h2>Open balance:</h2>
+      <BalanceTable data={balanceData} showZero={false} />
       <Button
         onClick={handleSettleBalance}
         variant="soft"

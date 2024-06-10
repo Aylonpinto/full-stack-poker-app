@@ -11,12 +11,12 @@ import {
 } from "@mui/joy";
 import Bluebird from "bluebird";
 import _ from "lodash";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import api from "../api/Api";
 import { deleteLiveData, getLiveSessions, getPlayers } from "../api/ApiUtils";
 import { PlayersData, SessionResponse } from "../types";
-import ExitedPlayers from "./ExitedPlayers";
+import BalanceTable from "./BalanceTable";
 import GameName from "./GameName";
 import LivePlayers from "./LivePlayers";
 
@@ -27,6 +27,7 @@ export default function Live() {
   const [disabled, setDisabled] = useState(true);
   const [totalAmount, setTotalAmount] = useState(0);
   const [playerNames, setPlayerNames] = useState<string[]>([]);
+  const isInserting = useRef(false);
 
   const navigate = useNavigate();
 
@@ -57,7 +58,6 @@ export default function Live() {
     syncToDB();
 
     if (livePlayersData.length && livePlayersData.slice(-1)[0].session_name) {
-      navigate("/home");
     }
   }, [livePlayersData]);
 
@@ -79,7 +79,7 @@ export default function Live() {
     });
     if (playersData.length) {
       setLivePlayersData(playersData);
-    } else if (livePlayersData.length === 0) {
+    } else if (livePlayersData.length === 0 && isInserting.current === false) {
       await setNewLivePlayer();
     }
   };
@@ -89,32 +89,38 @@ export default function Live() {
   };
 
   const setNewLivePlayer = async () => {
-    const session: Omit<
-      SessionResponse,
-      "id" | "session_name" | "closed_time"
-    > = {
-      player_name: "",
-      balance: buyin === "" ? 0 : Number(buyin),
-      settled: false,
-    };
-    const id = (await api.post<SessionResponse>("/sessions/", session)).data.id;
-    setLivePlayersData((prev: PlayersData) => {
-      return [
-        ...prev,
-        {
-          player_name: "",
-          start_balance: buyin === "" ? "" : `${buyin}`,
-          end_balance: "",
-          session_id: id,
-          closed_time: null,
-          session_name: "",
-        },
-      ];
-    });
+    isInserting.current = true;
+    try {
+      const session: Omit<
+        SessionResponse,
+        "id" | "session_name" | "closed_time"
+      > = {
+        player_name: "",
+        balance: buyin === "" ? 0 : Number(buyin),
+        settled: false,
+      };
+      const id = (await api.post<SessionResponse>("/sessions/", session)).data
+        .id;
+      setLivePlayersData((prev: PlayersData) => {
+        return [
+          ...prev,
+          {
+            player_name: "",
+            start_balance: buyin === "" ? "" : `${buyin}`,
+            end_balance: "",
+            session_id: id,
+            closed_time: null,
+            session_name: "",
+          },
+        ];
+      });
+    } finally {
+      isInserting.current = false;
+    }
   };
 
   const syncToDB = async () => {
-    Bluebird.each(livePlayersData, async (plData, index) => {
+    await Bluebird.each(livePlayersData, async (plData, index) => {
       const session = {
         player_name: plData.player_name,
         balance: Number(plData.end_balance) - Number(plData.start_balance),
@@ -138,12 +144,24 @@ export default function Live() {
       }));
       return newLivePlayerData;
     });
+    await syncToDB();
+    navigate("/home");
   };
 
   const handleClearPlayers = async () => {
     await deleteLiveData(api);
     setLivePlayersData([]);
     await setNewLivePlayer();
+  };
+
+  const getClosedPlayers = () => {
+    const closedPlayers = livePlayersData.filter((p) => p.closed_time);
+    return _.map(closedPlayers, (data) => {
+      return {
+        player_name: data.player_name,
+        balance: Number(data.end_balance) - Number(data.start_balance),
+      };
+    });
   };
 
   return (
@@ -180,9 +198,7 @@ export default function Live() {
         <Typography level="body-md">
           The total money on the table is: €{totalAmount}
         </Typography>
-        <ExitedPlayers
-          playersData={livePlayersData.filter((p) => p.closed_time)}
-        />
+        <BalanceTable data={getClosedPlayers()} showZero={true} />
         <form onSubmit={handleGameSubmit}>
           <FormControl>
             <GameName

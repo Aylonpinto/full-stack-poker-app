@@ -6,14 +6,16 @@ import { numberToStringMoney } from "../utils";
 
 type Props = {
   data: Balance;
+  showZero: boolean;
 };
 
-export default function BalanceTable({ data }: Props) {
+export default function BalanceTable({ data, showZero }: Props) {
   const totalBalance = _.round(_.sum(_.map(data, (b) => b.balance)), 1);
-  const body = _.map(data, (el) => {
+  const sort = _.sortBy(data, (el) => -el.balance);
+  const body = _.map(sort, (el) => {
     const stringBalance = numberToStringMoney(el.balance);
 
-    if (!el.balance) return;
+    if (!el.balance && !showZero) return;
     return (
       <tr style={{ color: el.balance >= 0 ? "#198754" : "#dc3545" }}>
         <td>{el.player_name}</td>
@@ -31,7 +33,7 @@ export default function BalanceTable({ data }: Props) {
   ) : (
     <></>
   );
-  return (
+  return body.length ? (
     <Sheet>
       <Table
         color="success"
@@ -54,5 +56,7 @@ export default function BalanceTable({ data }: Props) {
         {foot}
       </Table>
     </Sheet>
+  ) : (
+    <></>
   );
 }
