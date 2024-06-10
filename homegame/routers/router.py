@@ -1,7 +1,7 @@
 from typing import List, Optional, Type, get_args, get_origin, get_type_hints
 
 import sqlalchemy.orm
-from db.core import NotFoundError, get_db
+from db.core import NotFoundError, get_db, get_psql_db
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.params import Depends
 from pydantic import BaseModel
@@ -115,5 +115,20 @@ def create_router(DBType: Type):
         db.delete(db_item)
         db.commit()
         return BaseType(**db_item.__dict__)
+    
+    @router.get("/insert/")
+    @limiter.limit("1000/second")
+    def insert(request: Request, db: Session = Depends(get_psql_db), old_db: Session = Depends(get_db) ):
+        old_items = read(request, 0, 100, old_db )
+        for item in old_items:
+            delattr(item, 'id')
+            create(request, item, db)
+        return 'succes'
+
+    @router.get("/psql/")
+    @limiter.limit("1000/second")
+    def get_psql(request: Request, db: Session = Depends(get_psql_db)):
+        return read(request, 0,100,db)
+
     
     return router

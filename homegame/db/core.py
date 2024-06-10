@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from typing import Optional
 
@@ -5,9 +6,13 @@ from sqlalchemy import ForeignKey, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 URL_DATBASE = "sqlite:///./poker.db"
+PSQL_DATABASE = 'postgres://aylonpinto:OOzvDdc0h1Ux3h6urzknqFyIYm8oiy9O@dpg-cpjfq70l6cac73achvtg-a/pokerdb_toj3' if os.environ.get('PYTHON_ENV') == 'production' else "postgresql://aylonpintoqt:Pintoay1@localhost/mydb"
 
 engine = create_engine(URL_DATBASE, connect_args={"check_same_thread": False})
 session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+psql_engine = create_engine(PSQL_DATABASE)
+psql_session = sessionmaker(autocommit=False, autoflush=False, bind=psql_engine)
 
 class NotFoundError(Exception):
     pass
@@ -30,6 +35,7 @@ class DBSession(Base):
         return str(self.__dict__)
 
 Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=psql_engine)
 
 
 
@@ -40,3 +46,10 @@ def get_db():
         yield database
     finally:
         database.close()
+
+def get_psql_db():
+    db = psql_session()
+    try: 
+        yield db
+    finally:
+        db.close()
