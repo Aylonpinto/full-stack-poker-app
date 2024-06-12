@@ -4,6 +4,7 @@ import sqlalchemy.orm
 from db.core import NotFoundError, get_db, get_psql_db
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.params import Depends
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from routers.limiter import limiter
 from sqlalchemy.orm import Session
@@ -116,19 +117,27 @@ def create_router(DBType: Type):
         db.commit()
         return BaseType(**db_item.__dict__)
     
-    @router.get("/insert/")
+    @router.get("/insert_psql/")
     @limiter.limit("1000/second")
     def insert(request: Request, db: Session = Depends(get_psql_db), old_db: Session = Depends(get_db) ):
-        old_items = read(request, 0, 100, old_db )
+        old_items = read(request, 0, 1000, old_db )
         for item in old_items:
             delattr(item, 'id')
             create(request, item, db)
         return 'succes'
 
-    @router.get("/psql/")
+    @router.get("/read_psql/")
     @limiter.limit("1000/second")
-    def get_psql(request: Request, db: Session = Depends(get_psql_db)):
-        return read(request, 0,100,db)
+    def read_psql(request: Request, db: Session = Depends(get_psql_db), old_db: Session = Depends(get_db) ):
+        items = read(request, 0, 1000, db)
+        old_items = read(request, 0, 1000, old_db)
+        for item in old_items:
+            delete(request, item.id, old_db)
+        for item in items:
+            delattr(item, 'id')
+            create(request, item, old_db)
+        return FileResponse(path='./poker.db', media_type='database/db', filename='poker.db')
+
 
     
     return router
