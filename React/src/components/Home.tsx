@@ -1,7 +1,8 @@
 import { Container } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import api from "../api/Api";
-import { getOpenBalance } from "../api/ApiUtils";
+
+import { getNamedSessions } from "../api/ApiUtils";
 import { balanceFromSessions, getTransactions } from "../utils";
 import { Balance, PlayersData, SessionResponse } from "./../types";
 import BalanceTable from "./BalanceTable";
@@ -18,20 +19,18 @@ function Home() {
 
   useEffect(() => {
     fetchBalanceData();
-    fetchHistoryData();
   }, []);
 
   const fetchBalanceData = async () => {
-    setBalanceData(await getOpenBalance(api));
-  };
-
-  const fetchHistoryData = async () => {
-    const sessions = (
-      await api.get<SessionResponse[]>("/sessions/")
-    ).data.filter((s) => s.session_name);
-    const data = balanceFromSessions(sessions);
-
-    setHistoryData(data);
+    const sessions = [
+      await getNamedSessions(api, false),
+      await getNamedSessions(api, true),
+    ];
+    const [openBalance, historyBalance] = sessions.map((s) =>
+      balanceFromSessions(s),
+    );
+    setBalanceData(openBalance);
+    setHistoryData(historyBalance);
   };
 
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -70,14 +69,11 @@ function Home() {
   };
 
   const markAsSettled = async () => {
-    const response = await api.get<SessionResponse[]>("/sessions/");
-    const data = response.data;
-    const notSettled = data.filter((s) => !s.settled).map((s) => s.id);
-    for (const id of notSettled) {
-      await api.put(`/sessions/${id}`, { settled: 1 });
+    const unSettled = (await getNamedSessions(api, false)).map((s) => s.id);
+    for (const id of unSettled) {
+      await api.put(`/sessions/${id}`, { settled: true });
     }
     fetchBalanceData();
-    fetchHistoryData();
   };
 
   return (
@@ -95,10 +91,9 @@ function Home() {
         playerNames={historyData.map((p) => p.player_name)}
       />
       <br />
-      <br />
       <SettleBalanceModal settleBalanceData={settleBalanceData} />
-      <h2>History balance of all games:</h2>
       <Container maxWidth="md" sx={{ m: "10px auto" }}>
+        <h2>History balance of all games:</h2>
         <BalanceTable data={historyData} showZero={true} />
       </Container>
     </div>

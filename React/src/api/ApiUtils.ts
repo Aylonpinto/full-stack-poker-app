@@ -1,7 +1,6 @@
 import { AxiosInstance } from "axios";
 import _ from "lodash";
 import { SessionResponse } from "../types";
-import { balanceFromSessions } from "../utils";
 
 export const deleteLiveData = async (api: AxiosInstance) => {
   const liveData = await getLiveSessions(api);
@@ -23,9 +22,11 @@ export const getPlayers = async (api: AxiosInstance) => {
   return _.uniq(data.map((s) => s.player_name));
 };
 
-export const getOpenBalance = async (api: AxiosInstance) => {
+export const getNamedSessions = async (
+  api: AxiosInstance,
+  settled: boolean,
+) => {
   const response = await api.get<SessionResponse[]>("/sessions/");
   const data = response.data;
-  const notSettled = data.filter((s) => !s.settled && s.session_name);
-  return balanceFromSessions(notSettled);
+  return data.filter((s) => s.settled === settled && s.session_name);
 };

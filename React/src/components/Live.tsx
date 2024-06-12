@@ -56,9 +56,6 @@ export default function Live() {
 
   useEffect(() => {
     syncToDB();
-
-    if (livePlayersData.length && livePlayersData.slice(-1)[0].session_name) {
-    }
   }, [livePlayersData]);
 
   const fetchLiveData = async () => {
@@ -129,6 +126,12 @@ export default function Live() {
       };
       await api.put(`/sessions/${plData.session_id}`, session);
     });
+    if (
+      livePlayersData.length &&
+      _.every(livePlayersData, (pld) => pld.session_name)
+    ) {
+      navigate("/home");
+    }
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,15 +140,13 @@ export default function Live() {
 
   const handleGameSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setLivePlayersData((prev: PlayersData) => {
+    await setLivePlayersData((prev: PlayersData) => {
       const newLivePlayerData = prev.map((pl) => ({
         ...pl,
         session_name: gameName,
       }));
       return newLivePlayerData;
     });
-    await syncToDB();
-    navigate("/home");
   };
 
   const handleClearPlayers = async () => {
