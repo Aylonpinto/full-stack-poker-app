@@ -13,9 +13,6 @@ node_modules/
 __pycache__/
 *.py[cod]
 
-# # DB
-# **/poker.db
-
 # misc
 .DS_Store
 .env.local
