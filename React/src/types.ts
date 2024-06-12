@@ -1,39 +1,28 @@
 export type PlayerData = {
-  name: string;
-  end_balance: number | string;
-  start_balance: number | string;
+  session_id: number;
+  session_name: string | null;
+  player_name: string;
+  start_balance: string;
+  end_balance: string;
+  closed_time: Date | null;
 };
 
 export type PlayersData = PlayerData[];
 
 export type Callback<T> = (arg: T) => T;
 
-export type PlayerResponse = {
-  name: string;
+export type SessionResponse = {
+  id: number;
+  session_name: string | null;
+  player_name: string;
   balance: number;
-  id: number;
-};
-export type GameResponse = {
-  name: string;
-  id: number;
+  closed_time: Date | null;
+  settled: boolean;
 };
 
-export type LivePlayer = {
-  id: number;
-  player_id: number;
-  start_balance: number;
-  end_balance: number;
-};
+export type Session = Omit<SessionResponse, "id">;
 
-export type PlayedGame = {
-  id: number;
-  game_id: number;
-  player_id: number;
-  start_balance: number;
-  end_balance: number;
-};
-
-export type Games = {
-  id: number;
-  name: string;
-}[];
+export type Balance = Omit<
+  Session,
+  "session_name" | "closed_time" | "settled"
+>[];

@@ -21,7 +21,14 @@ export default function PlayerBalance({
   const addPlayer = () => {
     setPlayersData((prev) => [
       ...prev,
-      { name: "", start_balance: "", end_balance: "" },
+      {
+        player_name: "",
+        start_balance: "",
+        end_balance: "",
+        session_id: 0,
+        closed_time: null,
+        session_name: "",
+      },
     ]);
   };
 

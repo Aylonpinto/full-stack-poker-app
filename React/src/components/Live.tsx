@@ -11,75 +11,29 @@ import {
 } from "@mui/joy";
 import Bluebird from "bluebird";
 import _ from "lodash";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import api from "../api/Api";
-import { deleteLiveData, insertGame } from "../api/ApiUtils";
-import {
-  GameResponse,
-  LivePlayer,
-  PlayedGame,
-  PlayerResponse,
-  PlayersData,
-} from "../types";
-import ExitedPlayers from "./ExitedPlayers";
+import { deleteLiveData, getLiveSessions, getPlayers } from "../api/ApiUtils";
+import { PlayersData, SessionResponse } from "../types";
+import BalanceTable from "./BalanceTable";
 import GameName from "./GameName";
 import LivePlayers from "./LivePlayers";
 
 export default function Live() {
-  const [livePlayersData, setLivePlayersData] = useState<PlayersData>([
-    {
-      name: "",
-      start_balance: "",
-      end_balance: "",
-    },
-  ]);
-  const [buyin, setBuyin] = useState<number | string>("");
+  const [livePlayersData, setLivePlayersData] = useState<PlayersData>([]);
+  const [buyin, setBuyin] = useState<string>("");
   const [gameName, setGameName] = useState("");
   const [disabled, setDisabled] = useState(true);
   const [totalAmount, setTotalAmount] = useState(0);
   const [playerNames, setPlayerNames] = useState<string[]>([]);
+  const isInserting = useRef(false);
 
   const navigate = useNavigate();
 
-  const syncTimeDB = 5000;
-  // Sync with live DB
-  useEffect(() => {
-    // Function to be called when the state remains unchanged after the specified time
-    const handleUnchangedState = async () => {
-      console.log(
-        "State unchanged for",
-        syncTimeDB,
-        "milliseconds. Calling your async action...",
-      );
-
-      try {
-        // Your async function call
-        await asyncDBSync();
-
-        // If the async function completes successfully, you can update the state or perform other actions
-        // Example: setYourState('newState');
-      } catch (error) {
-        console.error("Error in async action:", error);
-      }
-    };
-
-    // Set up a timer when the component mounts or when the state changes
-    const timerId = setTimeout(() => {
-      handleUnchangedState();
-      // Update the previous state
-    }, syncTimeDB);
-
-    // Cleanup the timer when the component unmounts or when the state changes
-    return () => clearTimeout(timerId);
-  }, [livePlayersData]);
-
   // Enable saving
   useEffect(() => {
-    if (
-      _.every(livePlayersData, (pl) => pl.end_balance !== "") &&
-      gameName !== ""
-    ) {
+    if (_.every(livePlayersData, (pl) => pl.closed_time) && gameName !== "") {
       setDisabled(false);
     }
   }, [livePlayersData, gameName]);
@@ -91,61 +45,93 @@ export default function Live() {
         (p) => Number(p.start_balance) - Number(p.end_balance),
       ),
     );
-
     setTotalAmount(total);
   }, [livePlayersData]);
 
   // Fetch live data from DB
   useEffect(() => {
     fetchLiveData();
+    fetchPlayerNames();
   }, []);
 
+  useEffect(() => {
+    syncToDB();
+  }, [livePlayersData]);
+
   const fetchLiveData = async () => {
-    const response = await api.get<LivePlayer[]>("/live_games/");
-    const players = (await api.get<PlayerResponse[]>("/players/")).data;
+    const liveSessions = await getLiveSessions(api);
 
     const playersData: PlayersData = [];
 
-    _.each(response.data, (live) => {
+    _.each(liveSessions, (live) => {
       const player = {
-        name: players.find((p) => p.id === live.player_id)?.name ?? "",
-        start_balance: live.start_balance,
-        end_balance: live.end_balance ? live.end_balance : "",
+        player_name: live.player_name,
+        start_balance: live.balance ? `${-live.balance}` : "",
+        end_balance: "",
+        closed_time: live.closed_time,
+        session_id: live.id,
+        session_name: null,
       };
       playersData.push(player);
     });
     if (playersData.length) {
       setLivePlayersData(playersData);
+    } else if (livePlayersData.length === 0 && isInserting.current === false) {
+      await setNewLivePlayer();
     }
-    setPlayerNames(players.map((p) => p.name));
   };
 
-  const asyncDBSync = async () => {
-    const players = (await api.get<PlayerResponse[]>("/players/")).data;
+  const fetchPlayerNames = async () => {
+    setPlayerNames(await getPlayers(api));
+  };
 
-    Bluebird.each(livePlayersData, async (plData) => {
-      if (plData.name === "") return;
-      const post: Omit<LivePlayer, "id"> = {
-        player_id: 0,
-        start_balance: Number(plData.start_balance),
-        end_balance: Number(plData.end_balance),
+  const setNewLivePlayer = async () => {
+    isInserting.current = true;
+    try {
+      const session: Omit<
+        SessionResponse,
+        "id" | "session_name" | "closed_time"
+      > = {
+        player_name: "",
+        balance: buyin === "" ? 0 : Number(buyin),
+        settled: false,
       };
-      const player = players.find((p) => p.name === plData.name);
+      const id = (await api.post<SessionResponse>("/sessions/", session)).data
+        .id;
+      setLivePlayersData((prev: PlayersData) => {
+        return [
+          ...prev,
+          {
+            player_name: "",
+            start_balance: buyin === "" ? "" : `${buyin}`,
+            end_balance: "",
+            session_id: id,
+            closed_time: null,
+            session_name: "",
+          },
+        ];
+      });
+    } finally {
+      isInserting.current = false;
+    }
+  };
 
-      if (player) {
-        post.player_id = player.id;
-      } else {
-        const newPlayer = (
-          await api.post<PlayerResponse>("/players/", {
-            name: plData.name,
-            balance: 0,
-          })
-        ).data;
-        post.player_id = newPlayer.id;
-      }
-
-      await api.post<LivePlayer>("/live_games/", post);
+  const syncToDB = async () => {
+    await Bluebird.each(livePlayersData, async (plData, index) => {
+      const session = {
+        player_name: plData.player_name,
+        balance: Number(plData.end_balance) - Number(plData.start_balance),
+        closed_time: plData.closed_time,
+        session_name: plData.session_name,
+      };
+      await api.put(`/sessions/${plData.session_id}`, session);
     });
+    if (
+      livePlayersData.length &&
+      _.every(livePlayersData, (pld) => pld.session_name)
+    ) {
+      navigate("/home");
+    }
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,57 +140,29 @@ export default function Live() {
 
   const handleGameSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const games = (await api.get<GameResponse[]>("/games/")).data;
-    const gameId = (games?.length ? _.maxBy(games, (g) => g.id)!.id : 0) + 1;
-    for (const currentPlayer of livePlayersData) {
-      const players = (await api.get<PlayerResponse[]>("/players/")).data;
-      let playerId = undefined;
-      const dbPlayer = players.find((p) => p.name === currentPlayer?.name);
-
-      if (!dbPlayer) {
-        await api.post("/players/", {
-          name: currentPlayer.name,
-          balance: 0,
-        });
-        playerId = (await api.get<PlayerResponse[]>("/players/")).data.find(
-          (p) => p.name === currentPlayer.name,
-        )?.id;
-      } else {
-        playerId = dbPlayer.id;
-      }
-
-      if (!gameId || !playerId) {
-        throw new Error(
-          `Invalid player id ${playerId} or game id ${gameId}. Not able to post player ${currentPlayer.name}`,
-        );
-      }
-      const start = Number(currentPlayer.start_balance);
-      const end = Number(currentPlayer.end_balance);
-
-      const playedGameData = {
-        game_id: gameId,
-        player_id: playerId ?? 0,
-        start_balance: start,
-        end_balance: end,
-      };
-      await api.post<PlayedGame>("/played_games/", playedGameData);
-    }
-
-    await insertGame(api, gameName);
-    await deleteLiveData(api);
-    navigate("/home");
+    await setLivePlayersData((prev: PlayersData) => {
+      const newLivePlayerData = prev.map((pl) => ({
+        ...pl,
+        session_name: gameName,
+      }));
+      return newLivePlayerData;
+    });
   };
 
   const handleClearPlayers = async () => {
     await deleteLiveData(api);
-    setLivePlayersData([
-      {
-        name: "",
-        start_balance: "",
-        end_balance: "",
-      },
-    ]);
+    setLivePlayersData([]);
+    await setNewLivePlayer();
+  };
+
+  const getClosedPlayers = () => {
+    const closedPlayers = livePlayersData.filter((p) => p.closed_time);
+    return _.map(closedPlayers, (data) => {
+      return {
+        player_name: data.player_name,
+        balance: Number(data.end_balance) - Number(data.start_balance),
+      };
+    });
   };
 
   return (
@@ -233,6 +191,7 @@ export default function Live() {
         <LivePlayers
           playersData={livePlayersData}
           setPlayersData={setLivePlayersData}
+          setNewLivePlayer={setNewLivePlayer}
           buyin={buyin}
           playerNames={playerNames}
           handleClearPlayers={handleClearPlayers}
@@ -240,9 +199,7 @@ export default function Live() {
         <Typography level="body-md">
           The total money on the table is: €{totalAmount}
         </Typography>
-        <ExitedPlayers
-          playersData={livePlayersData.filter((p) => p.end_balance !== "")}
-        />
+        <BalanceTable data={getClosedPlayers()} showZero={true} />
         <form onSubmit={handleGameSubmit}>
           <FormControl>
             <GameName

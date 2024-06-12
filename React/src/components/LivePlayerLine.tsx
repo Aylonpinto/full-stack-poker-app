@@ -15,7 +15,7 @@ import PlayerStartInput from "./PlayerStartInput";
 type Props = {
   playerData: PlayerData;
   setPlayerData: (data: PlayerData) => void;
-  buyin: number;
+  buyin: string;
   playerNames: string[];
 };
 
@@ -32,13 +32,17 @@ export default function LivePlayerLine({
     const amount =
       playerData.start_balance === ""
         ? buyin
-        : Number(playerData.start_balance) + buyin;
-    setPlayerData({ ...playerData, start_balance: amount });
+        : `${Number(playerData.start_balance) + Number(buyin)}`;
+    setPlayerData({ ...playerData, start_balance: `${amount}` });
   };
 
   const handleFormSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    setPlayerData({ ...playerData, end_balance: endValue });
+    setPlayerData({
+      ...playerData,
+      end_balance: `${endValue}`,
+      closed_time: new Date(),
+    });
     setOpen(false);
   };
 
@@ -92,7 +96,7 @@ export default function LivePlayerLine({
           >
             <FormControl>
               <FormLabel>
-                What is the end balance of {`${playerData.name}?`}
+                What is the end balance of {`${playerData.player_name}?`}
               </FormLabel>
               <Input
                 placeholder="Exit amount"

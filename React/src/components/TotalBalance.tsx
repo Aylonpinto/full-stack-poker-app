@@ -1,9 +1,10 @@
 import Button from "@mui/joy/Button";
 import { Container } from "@mui/material";
-import Balance from "./Balance";
+import { Balance } from "../types";
+import BalanceTable from "./BalanceTable";
 
 type Props = {
-  balanceData: Record<string, number>;
+  balanceData: Balance;
   handleSettleBalance: (
     event: React.MouseEvent<HTMLButtonElement>,
   ) => Promise<void>;
@@ -12,7 +13,8 @@ type Props = {
 const TotalBalance = ({ balanceData, handleSettleBalance }: Props) => {
   return (
     <Container maxWidth="md" sx={{ m: "10px auto" }}>
-      <Balance data={balanceData} />
+      <h2>Open balance:</h2>
+      <BalanceTable data={balanceData} showZero={false} />
       <Button
         onClick={handleSettleBalance}
         variant="soft"

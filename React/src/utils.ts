@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { PlayerData, PlayersData } from "./types";
+import { Balance, PlayerData, PlayersData, SessionResponse } from "./types";
 
 export const setPlayerData = (
   index: number,
@@ -32,46 +32,73 @@ export const numberToStringMoney = (num: number) => {
   return string;
 };
 
-export const getTransactions = (balance: Record<string, number>) => {
-  let sortedAndFilteredBalance = _.sortBy(
-    _.toPairs(balance),
-    ([, value]) => value,
-  ).filter((b) => b[1] !== 0);
+export const getTransactions = (balance: Balance) => {
+  let filtered = balance.filter((el) => el.balance !== 0).reverse();
   let transactions: string[] = [];
-  let player = sortedAndFilteredBalance[0];
-  let total = _.sum(_.values(balance));
+  let player = filtered[0];
+  let total = _.sum(balance.map((el) => el.balance));
+  console.log(filtered, player);
 
-  while (player[1] < 0) {
-    let otherPlayer =
-      sortedAndFilteredBalance[sortedAndFilteredBalance.length - 1];
-    if (-player[1] === otherPlayer[1]) {
-      let amount = numberToStringMoney(Math.abs(-player[1]));
-      transactions.push(`${player[0]} pays ${amount} to ${otherPlayer[0]}`);
-      sortedAndFilteredBalance = _.slice(sortedAndFilteredBalance, 1, -1);
-    } else if (-player[1] < otherPlayer[1]) {
-      let amount = numberToStringMoney(Math.abs(-player[1]));
-      transactions.push(`${player[0]} pays ${amount} to ${otherPlayer[0]}`);
-      sortedAndFilteredBalance = _.slice(sortedAndFilteredBalance, 1);
-      sortedAndFilteredBalance[sortedAndFilteredBalance.length - 1] = [
-        otherPlayer[0],
-        otherPlayer[1] + player[1],
-      ];
+  while (player.balance < 0) {
+    let otherPlayer = filtered[filtered.length - 1];
+    console.log(player, otherPlayer);
+    if (-player.balance === otherPlayer.balance) {
+      console.log("hallo");
+      let amount = numberToStringMoney(Math.abs(-player.balance));
+      transactions.push(
+        `${player.player_name} pays ${amount} to ${otherPlayer.player_name}`,
+      );
+      filtered = _.slice(filtered, 1, -1);
+    } else if (-player.balance < otherPlayer.balance) {
+      let amount = numberToStringMoney(Math.abs(-player.balance));
+      transactions.push(
+        `${player.player_name} pays ${amount} to ${otherPlayer.player_name}`,
+      );
+      filtered = _.slice(filtered, 1);
+      filtered[filtered.length - 1] = {
+        player_name: otherPlayer.player_name,
+        balance: otherPlayer.balance + player.balance,
+      };
     } else {
-      let amount = numberToStringMoney(Math.abs(otherPlayer[1]));
-      transactions.push(`${player[0]} pays ${amount} to ${otherPlayer[0]}`);
-      sortedAndFilteredBalance = _.initial(sortedAndFilteredBalance);
-      player = [player[0], player[1] + otherPlayer[1]];
+      let amount = numberToStringMoney(Math.abs(otherPlayer.balance));
+      transactions.push(
+        `${player.player_name} pays ${amount} to ${otherPlayer.player_name}`,
+      );
+      filtered = _.initial(filtered);
+      player = {
+        player_name: player.player_name,
+        balance: player.balance + otherPlayer.balance,
+      };
     }
 
-    if (sortedAndFilteredBalance.length <= 1) {
+    if (filtered.length <= 1) {
       break;
     }
 
-    player = sortedAndFilteredBalance[0];
+    player = filtered[0];
   }
 
   let amount = numberToStringMoney(Math.abs(total));
   transactions.push(`Amount not accounted for: ${amount}`);
 
   return transactions;
+};
+
+export const balanceFromSessions = (sessions: SessionResponse[]) => {
+  const balance: Record<string, number> = {};
+  _.each(sessions, (ses) => {
+    const playerName = ses.player_name;
+    if (!(playerName in balance)) {
+      balance[playerName] = 0;
+    }
+    balance[playerName] += ses.balance;
+  });
+
+  const array = Object.keys(balance).map((name) => ({
+    player_name: name,
+    balance: balance[name],
+  }));
+  array.sort((a, b) => b.balance - a.balance);
+
+  return array;
 };

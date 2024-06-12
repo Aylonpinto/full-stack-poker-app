@@ -12,7 +12,8 @@ import LivePlayerLine from "./LivePlayerLine";
 type Props = {
   playersData: PlayersData;
   setPlayersData(callback: Callback<PlayersData> | PlayersData): void;
-  buyin: number | string;
+  setNewLivePlayer(): void;
+  buyin: string;
   playerNames: string[];
   handleClearPlayers(): void;
 };
@@ -20,29 +21,26 @@ type Props = {
 export default function LivePlayers({
   playersData,
   setPlayersData,
+  setNewLivePlayer,
   buyin,
   playerNames,
   handleClearPlayers,
 }: Props) {
-  const addPlayer = () => {
-    setPlayersData((prev) => [
-      ...prev,
-      { name: "", start_balance: buyin === "" ? "" : buyin, end_balance: "" },
-    ]);
-  };
-
   useEffect(() => {
     for (const player of playersData) {
-      if (typeof player.start_balance === "string") {
+      if (Number(player.start_balance) < Number(buyin) && !player.closed_time) {
         const index = _.indexOf(playersData, player);
 
-        setPlayersData((prev) => {
+        setPlayersData((prev: PlayersData) => {
           return [
             ...prev.slice(0, index),
             {
-              name: player.name,
-              start_balance: buyin,
+              player_name: player.player_name,
+              start_balance: `${buyin}`,
               end_balance: player.end_balance,
+              closed_time: player.closed_time,
+              session_id: player.session_id,
+              session_name: player.session_name,
             },
             ...prev.slice(index + 1),
           ];
@@ -55,13 +53,13 @@ export default function LivePlayers({
     <Sheet color="primary">
       <List>
         {playersData.map((player, i) => {
-          if (player.end_balance !== "") return <></>;
+          if (player.closed_time) return <></>;
           return (
             <ListItem>
               <LivePlayerLine
                 playerData={player}
                 setPlayerData={setPlayerData(i, setPlayersData)}
-                buyin={buyin === "" ? 0 : Number(buyin)}
+                buyin={buyin}
                 playerNames={playerNames}
               />
             </ListItem>
@@ -71,7 +69,7 @@ export default function LivePlayers({
       <Button
         variant="soft"
         color="primary"
-        onClick={() => addPlayer()}
+        onClick={() => setNewLivePlayer()}
         startDecorator={<Add />}
         size="sm"
       >

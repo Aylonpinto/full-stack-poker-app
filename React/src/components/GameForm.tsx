@@ -32,7 +32,16 @@ export default function GameForm({
 
   useEffect(() => {
     setGameName("");
-    setPlayersData([{ name: "", start_balance: "", end_balance: "" }]);
+    setPlayersData([
+      {
+        player_name: "",
+        start_balance: "",
+        end_balance: "",
+        session_id: 0,
+        closed_time: null,
+        session_name: "",
+      },
+    ]);
   }, [open]);
 
   return (
