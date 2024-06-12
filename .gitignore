@@ -10,7 +10,7 @@ node_modules/
 **/build
 
 
-homegame/__pycache__/**
+**/__pycache__
 
 # # DB
 # **/poker.db
