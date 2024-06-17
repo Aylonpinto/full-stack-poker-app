@@ -57,18 +57,22 @@ export default function LivePlayerLine({
           start: { size: "sm", sx: { flex: "0 3 auto" } },
         }}
       />
-      <Button
-        variant="outlined"
-        color="neutral"
-        startDecorator={<Add />}
-        sx={{ flex: "0 0 auto" }}
-        onClick={() => {
-          handleExtraBuyin();
-        }}
-        size="sm"
-      >
-        Buy-In
-      </Button>
+      {Number(buyin) ? (
+        <Button
+          variant="outlined"
+          color="neutral"
+          startDecorator={<Add />}
+          sx={{ flex: "0 0 auto" }}
+          onClick={() => {
+            handleExtraBuyin();
+          }}
+          size="sm"
+        >
+          Buy-In
+        </Button>
+      ) : (
+        <></>
+      )}
       <IconButton
         variant="soft"
         color="danger"

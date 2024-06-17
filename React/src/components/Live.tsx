@@ -1,10 +1,16 @@
-import { Save } from "@mui/icons-material";
+import {
+  MonetizationOnRounded,
+  MoneyOffRounded,
+  Save,
+} from "@mui/icons-material";
+
 import {
   Button,
   Container,
   FormControl,
   FormHelperText,
   FormLabel,
+  IconButton,
   Input,
   Stack,
   Typography,
@@ -24,7 +30,8 @@ export default function Live() {
   const [livePlayersData, setLivePlayersData] = useState<PlayersData>([]);
   const [buyin, setBuyin] = useState<string>("");
   const [gameName, setGameName] = useState("");
-  const [disabled, setDisabled] = useState(true);
+  const [saveDisabled, setSaveDisabled] = useState(true);
+  const [buyinDisabled, setBuyinDisabled] = useState(true);
   const [totalAmount, setTotalAmount] = useState(0);
   const [playerNames, setPlayerNames] = useState<string[]>([]);
   const isInserting = useRef(false);
@@ -34,9 +41,19 @@ export default function Live() {
   // Enable saving
   useEffect(() => {
     if (_.every(livePlayersData, (pl) => pl.closed_time) && gameName !== "") {
-      setDisabled(false);
+      setSaveDisabled(false);
     }
   }, [livePlayersData, gameName]);
+
+  useEffect(() => {
+    const startBalances = livePlayersData.map((p) => Number(p.start_balance));
+    const newBuyin = _.min(startBalances.filter((s) => !!s));
+    if (buyinDisabled) {
+      setBuyin("");
+    } else if (newBuyin) {
+      setBuyin(`${newBuyin}`);
+    }
+  }, [buyinDisabled]);
 
   // calculate money on the table
   useEffect(() => {
@@ -171,18 +188,44 @@ export default function Live() {
       <Typography level="body-md">
         Here you can keep track of a live cash game while you are playing!
       </Typography>
-      <Stack spacing={3}>
+      <Stack spacing={2}>
         <br />
         <FormControl>
           <FormLabel>Please fill in the buy-in amout:</FormLabel>
-          <Input
-            placeholder="Buy-in amount"
-            variant="soft"
-            type="number"
-            value={buyin}
-            startDecorator={"€"}
-            onChange={(e) => handleChange(e)}
-          />
+          <Container
+            sx={{
+              display: "flex",
+              alignContent: "space-between",
+            }}
+          >
+            <Input
+              placeholder="Buy-in amount"
+              variant="soft"
+              type="number"
+              value={buyin}
+              startDecorator={"€"}
+              onChange={(e) => handleChange(e)}
+              sx={{ flex: "0 1 auto" }}
+              disabled={buyinDisabled}
+            />
+
+            <IconButton
+              type="submit"
+              variant="soft"
+              color={!buyinDisabled ? "danger" : "success"}
+              sx={{ flex: "0 1 auto", margin: "0px 10px" }}
+              onClick={() => {
+                setBuyinDisabled(!buyinDisabled);
+              }}
+            >
+              {buyinDisabled ? (
+                <MonetizationOnRounded fontSize="small" />
+              ) : (
+                <MoneyOffRounded fontSize="small" />
+              )}
+            </IconButton>
+          </Container>
+
           <FormHelperText>
             This will be used as a unit to add extra buy-ins to players.
           </FormHelperText>
@@ -212,7 +255,7 @@ export default function Live() {
                   color="success"
                   startDecorator={<Save />}
                   onClick={() => {}}
-                  disabled={disabled}
+                  disabled={saveDisabled}
                 >
                   Save Game
                 </Button>
