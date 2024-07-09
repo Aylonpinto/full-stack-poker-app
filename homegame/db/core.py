@@ -6,7 +6,7 @@ from sqlalchemy import ForeignKey, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 URL_DATBASE = "sqlite:///./poker.db"
-PSQL_DATABASE = 'postgresql://aylonpinto:OOzvDdc0h1Ux3h6urzknqFyIYm8oiy9O@dpg-cpjfq70l6cac73achvtg-a/pokerdb_toj3' if os.environ.get('PYTHON_ENV') == 'production' else "postgresql://aylonpintoqt:Pintoay1@localhost/mydb"
+PSQL_DATABASE = os.environ.get('DB_URL') if os.environ.get('PYTHON_ENV') == 'production' else "postgresql://aylonpinto:Pintoay1@localhost/aylonpinto"
 
 engine = create_engine(URL_DATBASE, connect_args={"check_same_thread": False})
 session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
