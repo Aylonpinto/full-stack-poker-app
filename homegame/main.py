@@ -1,6 +1,6 @@
 import os
 
-from db.core import DBSession
+from db.core import DBSession, get_db, get_psql_db
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers.limiter import limiter
@@ -10,7 +10,9 @@ from slowapi.errors import RateLimitExceeded
 
 app = FastAPI()  # FastAPI(lifespan=lifespan)
 
-session_router = create_router(DBSession)
+get_db = get_psql_db
+
+session_router = create_router(DBSession, get_db)
 app.include_router(session_router)
 
 app.state.limiter = limiter
@@ -21,9 +23,12 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 def read_root():
     return "Server is running."
 
-origins = [
-    "https://homegame.onrender.com"
-] if os.environ.get('PYTHON_ENV') == 'production' else ["*"]
+
+origins = (
+    ["https://homegame.onrender.com"]
+    if os.environ.get("PYTHON_ENV") == "production"
+    else ["*"]
+)
 
 app.add_middleware(
     CORSMiddleware,
