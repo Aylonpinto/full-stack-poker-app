@@ -10,9 +10,11 @@ from slowapi.errors import RateLimitExceeded
 
 app = FastAPI()  # FastAPI(lifespan=lifespan)
 
-get_db = get_psql_db
+DB_TO_USE = os.environ.get("DB_TO_USE", "sqlite")
 
-session_router = create_router(DBSession, get_db)
+db = get_db if DB_TO_USE == "sqlite" else get_psql_db
+
+session_router = create_router(DBSession, db)
 app.include_router(session_router)
 
 app.state.limiter = limiter
