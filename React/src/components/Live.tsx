@@ -25,6 +25,7 @@ import { PlayersData, SessionResponse } from "../types";
 import BalanceTable from "./BalanceTable";
 import GameName from "./GameName";
 import LivePlayers from "./LivePlayers";
+import { getBuyInAmount } from "../utils";
 
 export default function Live() {
   const [livePlayersData, setLivePlayersData] = useState<PlayersData>([]);
@@ -47,7 +48,7 @@ export default function Live() {
 
   useEffect(() => {
     const startBalances = livePlayersData.map((p) => Number(p.start_balance));
-    const newBuyin = _.min(startBalances.filter((s) => !!s));
+    const newBuyin = getBuyInAmount(startBalances.filter((s) => !!s)) ?? 0;
     if (buyinDisabled) {
       setBuyin("");
     } else if (newBuyin) {

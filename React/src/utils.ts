@@ -41,9 +41,7 @@ export const getTransactions = (balance: Balance) => {
 
   while (player.balance < 0) {
     let otherPlayer = filtered[filtered.length - 1];
-    console.log(player, otherPlayer);
     if (-player.balance === otherPlayer.balance) {
-      console.log("hallo");
       let amount = numberToStringMoney(Math.abs(-player.balance));
       transactions.push(
         `${player.player_name} pays ${amount} to ${otherPlayer.player_name}`,
@@ -55,20 +53,14 @@ export const getTransactions = (balance: Balance) => {
         `${player.player_name} pays ${amount} to ${otherPlayer.player_name}`,
       );
       filtered = _.slice(filtered, 1);
-      filtered[filtered.length - 1] = {
-        player_name: otherPlayer.player_name,
-        balance: otherPlayer.balance + player.balance,
-      };
+      otherPlayer.balance += player.balance;
     } else {
       let amount = numberToStringMoney(Math.abs(otherPlayer.balance));
       transactions.push(
         `${player.player_name} pays ${amount} to ${otherPlayer.player_name}`,
       );
       filtered = _.initial(filtered);
-      player = {
-        player_name: player.player_name,
-        balance: player.balance + otherPlayer.balance,
-      };
+      player.balance += otherPlayer.balance;
     }
 
     if (filtered.length <= 1) {
@@ -102,3 +94,21 @@ export const balanceFromSessions = (sessions: SessionResponse[]) => {
 
   return array;
 };
+
+// Function to return gcd of a and b 
+const gcd = (a: number, b: number) =>{ 
+    if (a === 0) 
+      return b; 
+    return gcd(b % a, a); 
+} 
+
+export const getBuyInAmount = (startBalances: number[]) => {
+  let result = startBalances[0];
+  for (const balance of startBalances) {
+    result = gcd(balance, result);
+    if (result === 1) {
+      return 1;
+    }
+  } 
+  return result;
+}

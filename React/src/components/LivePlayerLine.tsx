@@ -40,7 +40,7 @@ export default function LivePlayerLine({
     event?.preventDefault();
     setPlayerData({
       ...playerData,
-      end_balance: `${endValue}`,
+      end_balance: `${Number(endValue)}`,
       closed_time: new Date(),
     });
     setOpen(false);
