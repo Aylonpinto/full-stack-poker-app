@@ -6,17 +6,17 @@ from sqlalchemy import ForeignKey, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 URL_DATBASE = "sqlite:///./poker.db"
-PSQL_DATABASE = (
-    os.environ.get("DB_URL")
-    if os.environ.get("PYTHON_ENV") == "production"
-    else "postgresql://aylonpinto:Pintoay1@localhost/postgres"
-)
+# PSQL_DATABASE = (
+#     os.environ.get("DB_URL")
+#     if os.environ.get("PYTHON_ENV") == "production"
+#     else "postgresql://aylonpinto:Pintoay1@localhost/postgres"
+# )
 
 engine = create_engine(URL_DATBASE, connect_args={"check_same_thread": False})
 session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-psql_engine = create_engine(PSQL_DATABASE)
-psql_session = sessionmaker(autocommit=False, autoflush=False, bind=psql_engine)
+# psql_engine = create_engine(PSQL_DATABASE)
+# psql_session = sessionmaker(autocommit=False, autoflush=False, bind=psql_engine)
 
 
 class NotFoundError(Exception):
@@ -41,7 +41,7 @@ class DBSession(Base):
 
 
 Base.metadata.create_all(bind=engine)
-Base.metadata.create_all(bind=psql_engine)
+# Base.metadata.create_all(bind=psql_engine)
 
 
 # Dependency to get the database session
@@ -53,9 +53,9 @@ def get_db():
         database.close()
 
 
-def get_psql_db():
-    db = psql_session()
-    try:
-        yield db
-    finally:
-        db.close()
+# def get_psql_db():
+#     db = psql_session()
+#     try:
+#         yield db
+#     finally:
+#         db.close()

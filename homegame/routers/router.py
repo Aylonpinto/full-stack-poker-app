@@ -1,7 +1,7 @@
 from typing import List, Optional, Type, get_args, get_origin, get_type_hints, Generator
 
 import sqlalchemy.orm
-from db.core import NotFoundError, get_psql_db, get_db
+from db.core import NotFoundError
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.params import Depends
 from fastapi.responses import FileResponse
@@ -149,35 +149,35 @@ def create_router(DBType: Type, session: Generator[Session, None, None]) -> APIR
         db.commit()
         return BaseType(**db_item.__dict__)
 
-    @router.get("/insert_psql/")
-    @limiter.limit("1000/second")
-    def insert(
-        request: Request,
-        db: Session = Depends(get_psql_db),
-        old_db: Session = Depends(get_db),
-    ):
-        old_items = read(request, 0, 1000, old_db)
-        for item in old_items:
-            delattr(item, "id")
-            create(request, item, db)
-        return "succes"
+    # @router.get("/insert_psql/")
+    # @limiter.limit("1000/second")
+    # def insert(
+    #     request: Request,
+    #     db: Session = Depends(get_psql_db),
+    #     old_db: Session = Depends(get_db),
+    # ):
+    #     old_items = read(request, 0, 1000, old_db)
+    #     for item in old_items:
+    #         delattr(item, "id")
+    #         create(request, item, db)
+    #     return "succes"
 
-    @router.get("/read_psql/")
-    @limiter.limit("1000/second")
-    def read_psql(
-        request: Request,
-        db: Session = Depends(get_psql_db),
-        old_db: Session = Depends(get_db),
-    ):
-        items = read(request, 0, 1000, db)
-        old_items = read(request, 0, 1000, old_db)
-        for item in old_items:
-            delete(request, item.id, old_db)
-        for item in items:
-            delattr(item, "id")
-            create(request, item, old_db)
-        return FileResponse(
-            path="./poker.db", media_type="database/db", filename="poker.db"
-        )
+    # @router.get("/read_psql/")
+    # @limiter.limit("1000/second")
+    # def read_psql(
+    #     request: Request,
+    #     db: Session = Depends(get_psql_db),
+    #     old_db: Session = Depends(get_db),
+    # ):
+    #     items = read(request, 0, 1000, db)
+    #     old_items = read(request, 0, 1000, old_db)
+    #     for item in old_items:
+    #         delete(request, item.id, old_db)
+    #     for item in items:
+    #         delattr(item, "id")
+    #         create(request, item, old_db)
+    #     return FileResponse(
+    #         path="./poker.db", media_type="database/db", filename="poker.db"
+    #     )
 
     return router

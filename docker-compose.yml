@@ -1,0 +1,19 @@
+version: '3'
+services:
+  backend:
+    build: ./homegame  # Path to your backend Dockerfile (homegame directory)
+    ports:
+      - "8000:8000"  # Adjust port as needed
+    volumes:
+      - ./homegame/poker.db:/app/poker.db  # Map the poker.db directly
+    environment:
+      - DATABASE_URL=sqlite:///app/poker.db  # Path to poker.db in the container
+
+  frontend:
+    build: ./React  # Path to your frontend Dockerfile
+    ports:
+      - "3000:3000"  # Adjust port as needed
+    depends_on:
+      - backend
+
+
