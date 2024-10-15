@@ -8,6 +8,9 @@ services:
       - ./homegame/poker.db:/app/poker.db  # Map the poker.db directly
     environment:
       - DATABASE_URL=sqlite:///app/poker.db  # Path to poker.db in the container
+      - PORT=8000  # Port to run the backend on
+      - PYTHON_ENV=production 
+
 
   frontend:
     build: ./React  # Path to your frontend Dockerfile
@@ -15,5 +18,8 @@ services:
       - "3000:3000"  # Adjust port as needed
     depends_on:
       - backend
+    environment:
+      - NODE_ENV=production 
+      - BE_URL=http://localhost:8000  # URL to the backend service
 
 

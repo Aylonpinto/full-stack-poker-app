@@ -25,9 +25,7 @@ def read_root():
 
 
 origins = (
-    ["https://homegame.onrender.com"]
-    if os.environ.get("PYTHON_ENV") == "production"
-    else ["*"]
+    ["http://localhost:3000"] if os.environ.get("PYTHON_ENV") == "production" else ["*"]
 )
 
 app.add_middleware(
