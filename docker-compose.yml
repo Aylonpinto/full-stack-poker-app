@@ -20,6 +20,6 @@ services:
       - backend
     environment:
       - NODE_ENV=production 
-      - BE_URL=http://localhost:8000  # URL to the backend service
+      - REACT_APP_BE_URL=http://localhost:8000  # URL to the backend service
 
 

@@ -25,7 +25,7 @@ def read_root():
 
 
 origins = (
-    ["http://localhost:3000"] if os.environ.get("PYTHON_ENV") == "production" else ["*"]
+    ["http://0.0.0.0:3000"] if os.environ.get("PYTHON_ENV") == "production" else ["*"]
 )
 
 app.add_middleware(
