@@ -24,9 +24,7 @@ def read_root():
     return "Server is running."
 
 
-origins = (
-    ["http://0.0.0.0:3000"] if os.environ.get("PYTHON_ENV") == "production" else ["*"]
-)
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
