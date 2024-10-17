@@ -1,6 +1,4 @@
-import os
-
-from db.core import DBSession, get_db
+from db.core import DBSession
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers.limiter import limiter
@@ -10,12 +8,12 @@ from slowapi.errors import RateLimitExceeded
 
 app = FastAPI()  # FastAPI(lifespan=lifespan)
 
-DB_TO_USE = os.environ.get("DB_TO_USE", "sqlite")
+session_router = create_router(DBSession)
 
-session_router = create_router(DBSession, get_db)
 app.include_router(session_router)
 
 app.state.limiter = limiter
+
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 

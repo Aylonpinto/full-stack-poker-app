@@ -7,7 +7,7 @@ services:
     volumes:
       - ./homegame/poker.db:/app/poker.db  # Map the poker.db directly
     environment:
-      - DATABASE_URL=sqlite:///app/poker.db  # Path to poker.db in the container
+      - DATABASE_URL=sqlite:///./poker.db  # Path to poker.db in the container
       - PORT=8000  # Port to run the backend on
       - PYTHON_ENV=production 
 

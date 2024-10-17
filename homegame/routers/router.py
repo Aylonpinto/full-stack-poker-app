@@ -1,13 +1,23 @@
-from typing import List, Optional, Type, get_args, get_origin, get_type_hints, Generator
+from typing import (
+    List,
+    Optional,
+    Type,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 import sqlalchemy.orm
-from db.core import NotFoundError
+from db.core import NotFoundError, get_db, USE_PSQL
+
+if USE_PSQL:
+    from db.core import get_psql_db
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.params import Depends
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from routers.limiter import limiter
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 
 def extract_mapped_type(mapped_type):
@@ -17,11 +27,17 @@ def extract_mapped_type(mapped_type):
     return mapped_type
 
 
-def create_router(DBType: Type, session: Generator[Session, None, None]) -> APIRouter:
+def create_router(
+    DBType: Type,
+) -> APIRouter:
     item = DBType.__tablename__[:-1]
     router = APIRouter(
         prefix=f"/{DBType.__tablename__}",
     )
+
+    main_db = get_db
+    if USE_PSQL:
+        main_db = get_psql_db
 
     def create_classes(DBType: Type):
         annotations_create = {}
@@ -86,7 +102,7 @@ def create_router(DBType: Type, session: Generator[Session, None, None]) -> APIR
         request: Request,
         skip: int = 0,
         limit: int = 100,
-        db: Session = Depends(session),
+        db: Session = Depends(main_db),
     ) -> List[BaseType]:
         try:
             db_items = db.query(DBType).offset(skip).limit(limit).all()
@@ -100,7 +116,7 @@ def create_router(DBType: Type, session: Generator[Session, None, None]) -> APIR
     @router.post("/")
     @limiter.limit("1000/second")
     def create(
-        request: Request, create_item: CreateType, db: Session = Depends(session)
+        request: Request, create_item: CreateType, db: Session = Depends(main_db)
     ) -> BaseType:
         db_item = DBType(**create_item.model_dump(exclude_none=True))
         db.add(db_item)
@@ -110,7 +126,7 @@ def create_router(DBType: Type, session: Generator[Session, None, None]) -> APIR
 
     @router.get("/{id}")
     @limiter.limit("1000/second")
-    def read_one(request: Request, id: int, db: Session = Depends(session)) -> BaseType:
+    def read_one(request: Request, id: int, db: Session = Depends(main_db)) -> BaseType:
         db_item = db.query(DBType).filter(DBType.id == id).first()
         if db_item is None:
             raise HTTPException(
@@ -124,7 +140,7 @@ def create_router(DBType: Type, session: Generator[Session, None, None]) -> APIR
         request: Request,
         id: int,
         item_update: UpdateType,
-        db: Session = Depends(session),
+        db: Session = Depends(main_db),
     ) -> BaseType:
         db_item = db.query(DBType).filter(DBType.id == id).first()
         if db_item is None:
@@ -139,7 +155,7 @@ def create_router(DBType: Type, session: Generator[Session, None, None]) -> APIR
 
     @router.delete("/{id}")
     @limiter.limit("1000/second")
-    def delete(request: Request, id: int, db: Session = Depends(session)) -> BaseType:
+    def delete(request: Request, id: int, db: Session = Depends(main_db)) -> BaseType:
         db_item = db.query(DBType).filter(DBType.id == id).first()
         if db_item is None:
             raise HTTPException(
@@ -149,35 +165,37 @@ def create_router(DBType: Type, session: Generator[Session, None, None]) -> APIR
         db.commit()
         return BaseType(**db_item.__dict__)
 
-    # @router.get("/insert_psql/")
-    # @limiter.limit("1000/second")
-    # def insert(
-    #     request: Request,
-    #     db: Session = Depends(get_psql_db),
-    #     old_db: Session = Depends(get_db),
-    # ):
-    #     old_items = read(request, 0, 1000, old_db)
-    #     for item in old_items:
-    #         delattr(item, "id")
-    #         create(request, item, db)
-    #     return "succes"
+    if USE_PSQL:
 
-    # @router.get("/read_psql/")
-    # @limiter.limit("1000/second")
-    # def read_psql(
-    #     request: Request,
-    #     db: Session = Depends(get_psql_db),
-    #     old_db: Session = Depends(get_db),
-    # ):
-    #     items = read(request, 0, 1000, db)
-    #     old_items = read(request, 0, 1000, old_db)
-    #     for item in old_items:
-    #         delete(request, item.id, old_db)
-    #     for item in items:
-    #         delattr(item, "id")
-    #         create(request, item, old_db)
-    #     return FileResponse(
-    #         path="./poker.db", media_type="database/db", filename="poker.db"
-    #     )
+        @router.get("/insert_psql/")
+        @limiter.limit("1000/second")
+        def insert(
+            request: Request,
+            db: Session = Depends(get_psql_db),
+            old_db: Session = Depends(get_db),
+        ):
+            old_items = read(request, 0, 1000, old_db)
+            for item in old_items:
+                delattr(item, "id")
+                create(request, item, db)
+            return "succes"
+
+        @router.get("/read_psql/")
+        @limiter.limit("1000/second")
+        def read_psql(
+            request: Request,
+            db: Session = Depends(get_psql_db),
+            old_db: Session = Depends(get_db),
+        ):
+            items = read(request, 0, 1000, db)
+            old_items = read(request, 0, 1000, old_db)
+            for item in old_items:
+                delete(request, item.id, old_db)
+            for item in items:
+                delattr(item, "id")
+                create(request, item, old_db)
+            return FileResponse(
+                path="./poker.db", media_type="database/db", filename="poker.db"
+            )
 
     return router
