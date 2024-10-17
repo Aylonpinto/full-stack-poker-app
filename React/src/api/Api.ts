@@ -1,9 +1,6 @@
 import axios from "axios";
 
-const url =
-  process.env.NODE_ENV === "production"
-    ? "https://homegame-api.onrender.com"
-    : `http://${window.location.hostname}:8000`;
+const url = process.env.REACT_APP_BE_URL ?? "http://localhost:8000";
 
 const api = axios.create({
   baseURL: url,

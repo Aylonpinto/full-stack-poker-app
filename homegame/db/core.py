@@ -3,16 +3,21 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import ForeignKey, create_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker, Session
 
-URL_DATBASE = "sqlite:///./poker.db"
-PSQL_DATABASE = os.environ.get('DB_URL') if os.environ.get('PYTHON_ENV') == 'production' else "postgresql://aylonpinto:Pintoay1@localhost/aylonpinto"
+
+URL_DATBASE = (
+    os.environ.get("DATABASE_URL")
+    if os.environ.get("DATABASE_URL")
+    else "sqlite:///./poker.db"
+)
+
+USE_PSQL = os.environ.get("USE_PSQL") == "true"
+
 
 engine = create_engine(URL_DATBASE, connect_args={"check_same_thread": False})
 session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-psql_engine = create_engine(PSQL_DATABASE)
-psql_session = sessionmaker(autocommit=False, autoflush=False, bind=psql_engine)
 
 class NotFoundError(Exception):
     pass
@@ -29,14 +34,10 @@ class DBSession(Base):
     session_name: Mapped[Optional[str]] = mapped_column(nullable=True)
     balance: Mapped[float]
     closed_time: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-    settled: Mapped[bool] 
-    
+    settled: Mapped[bool]
+
     def __repr__(self):
         return str(self.__dict__)
-
-Base.metadata.create_all(bind=engine)
-Base.metadata.create_all(bind=psql_engine)
-
 
 
 # Dependency to get the database session
@@ -47,9 +48,23 @@ def get_db():
     finally:
         database.close()
 
-def get_psql_db():
-    db = psql_session()
-    try: 
-        yield db
-    finally:
-        db.close()
+
+Base.metadata.create_all(bind=engine)
+if USE_PSQL:
+    PSQL_DATABASE = (
+        os.environ.get("DATABASE_URL")
+        if os.environ.get("DATABASE_URL")
+        else "postgresql://aylonpinto:Pintoay1@localhost/postgres"
+    )
+
+    psql_engine = create_engine(PSQL_DATABASE)
+    psql_session = sessionmaker(autocommit=False, autoflush=False, bind=psql_engine)
+
+    Base.metadata.create_all(bind=psql_engine)
+
+    def get_psql_db():
+        db = psql_session()
+        try:
+            yield db
+        finally:
+            db.close()
